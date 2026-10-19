@@ -1,0 +1,24 @@
+# 本机配置（含地址、密钥、通知渠道）
+config.sh
+
+# 生成物 / 运行时状态
+.agent-coordination/patrol-state.json
+.agent-coordination/patrol.log
+.agent-coordination/HANDOFF-latest.md
+.agent-coordination/*.tmp
+
+# 发布与备份
+deploy/
+*.bak-*
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+
+# 编辑器 / 系统
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db

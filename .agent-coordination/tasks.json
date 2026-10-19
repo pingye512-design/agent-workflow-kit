@@ -1,0 +1,47 @@
+{
+  "_readme": "任务板。唯一任务源。卡片只增不删：做完把 status 改 done 并补 note。",
+  "_statuses": ["doing", "blocked", "done"],
+  "_fields": {
+    "id": "T-YYYYMMDD-NN，按天编号",
+    "owner": "谁在做（AI 工具名或人名）",
+    "goal": "一句话说清要达成什么",
+    "files": "会改动的文件/目录，用于防冲突",
+    "status": "doing / blocked / done",
+    "started_at": "YYYY-MM-DDTHH:MM+08",
+    "done_so_far": "已经验证过的进展，只写事实",
+    "next_step": "下一句可以直接执行的话，不是口号",
+    "handoff_hint": "接手的人需要知道的边界条件",
+    "note": "收尾说明 / 失败原因 / 回滚方式"
+  },
+  "tasks": [
+    {
+      "id": "T-20261019-01",
+      "owner": "cli-agent",
+      "goal": "把每日汇总从本机定时任务搬到服务器，本机关机也能发",
+      "files": ["scripts/patrol.sh", "config.sh"],
+      "status": "doing",
+      "started_at": "2026-10-19T09:20+08",
+      "done_so_far": [
+        "已确认本机 cron 依赖机器开机：巡检记录出现 26 小时空档",
+        "已在服务器上建好 systemd timer 草稿，未启用"
+      ],
+      "next_step": "在服务器执行 systemctl enable --now patrol.timer，然后连续观察两个周期",
+      "handoff_hint": "只动 scripts/patrol.sh 与 systemd unit，不改业务逻辑；不需要数据库权限",
+      "note": ""
+    },
+    {
+      "id": "T-20261019-02",
+      "owner": "assistant",
+      "goal": "登录失败时给出可读原因，而不是只弹『操作失败』",
+      "files": ["web/login.js"],
+      "status": "blocked",
+      "started_at": "2026-10-19T10:05+08",
+      "done_so_far": [
+        "已定位：接口把 401 和 500 都映射成了同一条提示"
+      ],
+      "next_step": "需要产品确认：是否允许区分『密码错误』与『账号不存在』（有撞库风险）",
+      "handoff_hint": "确认后再改文案；前端改动不超过 20 行",
+      "note": "等业务口径，不自行决定"
+    }
+  ]
+}
