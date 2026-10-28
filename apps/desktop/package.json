@@ -1,0 +1,14 @@
+{
+  "name": "rb-desktop-assistant",
+  "version": "1.8.7",
+  "description": "RB小仁同学 / RB精灵 · Windows 桌面助手",
+  "main": "bootstrap.cjs",
+  "author": "RB Assistant contributors",
+  "license": "MIT",
+  "scripts": {
+    "start": "electron ."
+  },
+  "devDependencies": {
+    "electron": "33.2.1"
+  }
+}

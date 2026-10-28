@@ -1,0 +1,10 @@
+page { background: #f3f6fb; color: #172033; font-size: 28rpx; }
+.page { padding: 28rpx; box-sizing: border-box; }
+.card { background: #fff; border-radius: 24rpx; padding: 28rpx; margin-bottom: 22rpx; box-shadow: 0 8rpx 30rpx rgba(27, 52, 105, .07); }
+.title { font-size: 38rpx; font-weight: 700; }
+.muted { color: #778197; }
+.primary { background: #315efb; color: #fff; border-radius: 18rpx; }
+.outline { border: 2rpx solid #d7deeb; color: #27334d; background: #fff; border-radius: 18rpx; }
+.input { background: #f7f9fc; border: 2rpx solid #dfe5ef; border-radius: 18rpx; padding: 20rpx; box-sizing: border-box; }
+.row { display: flex; align-items: center; }
+.between { justify-content: space-between; }

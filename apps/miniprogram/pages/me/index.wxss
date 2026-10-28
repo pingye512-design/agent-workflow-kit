@@ -1,0 +1,7 @@
+.profile { display:flex; align-items:center; gap:22rpx; }
+.avatar { width:100rpx; height:100rpx; line-height:100rpx; text-align:center; color:#fff; background:linear-gradient(135deg,#10204a,#315efb); border-radius:30rpx; font-size:48rpx; }
+.item { padding:22rpx 0; border-bottom:2rpx solid #edf0f5; }
+.item:last-child { border-bottom:0; }
+.warn { color:#c47a00; }.ok { color:#168454; }
+.section { font-weight:700; font-size:32rpx; margin-bottom:15rpx; }
+.boundary { line-height:1.9; }

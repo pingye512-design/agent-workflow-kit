@@ -22,3 +22,16 @@ venv/
 .idea/
 .DS_Store
 Thumbs.db
+
+# JavaScript / Electron
+node_modules/
+dist/
+*.log
+.env
+.env.*
+!.env.example
+
+# Local-only app configuration and user state
+apps/**/config.local.*
+apps/**/user-data/
+apps/**/.updates/

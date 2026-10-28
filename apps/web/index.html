@@ -1,0 +1,2633 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>RB小仁同学 · 桌面客户端</title>
+<link rel="manifest" href="./manifest.webmanifest">
+<meta name="theme-color" content="#0f1730">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="RB小仁同学">
+<style>
+  :root{--bg:#0b1226;--panel:#0f1730;--panel2:#141d3d;--line:#22305c;--line2:#1b2648;--txt:#e6ecff;--dim:#9db0e6;--accent:#4f7cff;--accent2:#22c1c3;--ok:#3ddc97;--warn:#ffb454;--human:#7de0c0}
+  *{box-sizing:border-box}
+  html,body{height:100%;margin:0}
+  /* 全屏：铺满整块屏，左栏略加宽、聊天区留白更大 */
+  body.fs{width:100vw;height:100vh}
+  body.fs aside{width:360px;flex:0 0 360px}
+  body.fs #msgs{padding:22px 30px}
+  body{background:radial-gradient(1200px 600px at 12% -10%,#1b2a5e 0%,var(--bg) 55%),var(--bg);color:var(--txt);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;display:flex;flex-direction:column;overflow:hidden}
+  header{display:flex;align-items:center;gap:10px;padding:10px 16px;background:linear-gradient(135deg,#1b2550,#111a38);border-bottom:1px solid var(--line);-webkit-app-region:drag}
+  header .dot{width:9px;height:9px;border-radius:50%;background:var(--warn);box-shadow:0 0 8px currentColor}
+  header .dot.on{background:var(--ok)}
+  header h1{font-size:15px;margin:0;font-weight:600;letter-spacing:.3px}
+  header .sp{flex:1}
+  header .st{font-size:11.5px;color:var(--dim)}
+  header button{background:#1a2447;border:1px solid var(--line);color:var(--dim);border-radius:8px;padding:5px 10px;font-size:12px;cursor:pointer}
+  header button:hover{border-color:var(--accent);color:#fff}
+  main{flex:1;display:flex;min-height:0;overflow:hidden}
+  /* 左栏 */
+  aside{width:320px;flex:0 0 320px;border-right:1px solid var(--line);display:flex;flex-direction:column;align-items:center;padding:14px 16px;gap:10px;overflow:auto}
+  #hero{width:172px;height:274px;position:relative;cursor:pointer}
+  #watchPill{font-size:10.5px;color:#9fe1cb;border:1px solid #2f705e;background:#123027;border-radius:10px;padding:2px 7px;white-space:nowrap}
+  #watchPill.paused{color:#fac775;border-color:#854f0b;background:#412402}
+  /* 动作守望提示：像任务旁边的小字段，默认不挡用户操作 */
+  #guardTip{position:fixed;right:18px;bottom:74px;width:286px;max-width:calc(100vw - 36px);display:none;background:linear-gradient(135deg,rgba(255,244,250,.98),rgba(255,224,238,.98));color:#46263a;border:1px solid #ff9fc0;border-radius:16px;padding:10px 11px;box-shadow:0 12px 30px rgba(175,55,112,.32),0 0 0 3px rgba(255,171,205,.18);z-index:2000;animation:guardIn .22s ease-out}
+  #guardTip.on{display:block}
+  #guardTip.high{background:linear-gradient(135deg,rgba(255,244,238,.99),rgba(255,220,220,.99));border-color:#ff8b93;color:#552632}
+  #guardTip .gt{display:flex;align-items:center;gap:6px;font-size:12px}
+  #guardTip .gi{font-size:16px}
+  #guardTip .gt b{flex:1}
+  #guardTip .gx{border:0;background:transparent;color:inherit;opacity:.6;font-size:16px;cursor:pointer}
+  #guardTip .gb{font-size:11.5px;line-height:1.55;margin-top:5px;word-break:break-word}
+  #guardTip .ga{display:flex;gap:6px;margin-top:8px}
+  #guardTip button{border:1px solid #e78aac;background:rgba(255,255,255,.6);color:#7d3158;border-radius:9px;padding:4px 8px;font-size:11px;cursor:pointer}
+  #guardTip button:hover{background:#fff}
+  #guardTip .gc{margin-left:auto;background:#ff78a6;border-color:#ff78a6;color:#fff}
+  @keyframes guardIn{from{opacity:0;transform:translateY(7px) scale(.96)}to{opacity:1;transform:none}}
+  body.pet.collapsed #guardTip{left:4px;right:4px;bottom:auto;top:18px;width:auto;max-width:none;font-size:10.5px}
+  body.pet.collapsed #guardTip .ga{margin-top:5px}
+  #hero .sp-char{width:172px;height:274px}
+  #hero .sp-svg{width:172px;height:274px}
+  #hero .sp-portal{width:136px}
+  .heroName{font-size:16px;font-weight:600;margin-top:-6px}
+  .slogan{font-size:11.5px;color:var(--dim);text-align:center;line-height:1.55;padding:0 6px}
+  .petWrap{width:100%;background:var(--panel);border:1px solid var(--line2);border-radius:12px;padding:9px 11px;display:flex;align-items:center;gap:8px;font-size:11.5px;color:var(--dim)}
+  .petWrap .bar{flex:1;height:7px;background:#1b2648;border-radius:5px;overflow:hidden}
+  .petWrap .bar i{display:block;height:100%;width:0;background:linear-gradient(90deg,#ff7aa2,#ffb454);transition:width .4s}
+  .row{width:100%;display:flex;gap:8px}
+  .btn{flex:1;text-align:center;text-decoration:none;background:#1a2447;border:1px solid var(--line);color:var(--dim);border-radius:10px;padding:9px 8px;font-size:12px;cursor:pointer}
+  .btn:hover{border-color:var(--accent);color:#fff}
+  .btn.p{background:var(--accent);border-color:var(--accent);color:#fff}
+  .btn.p:hover{background:#6b91ff}
+  .hint{font-size:11px;color:#7f90c4;line-height:1.6;background:#0d1531;border:1px dashed var(--line2);border-radius:10px;padding:9px 11px;width:100%}
+  /* 右栏 */
+  section{flex:1;display:flex;flex-direction:column;min-width:0;min-height:0;overflow:hidden}
+  #msgs{flex:1;min-height:0;overflow-y:auto;padding:18px 20px;display:flex;flex-direction:column;gap:11px}
+  .m{max-width:74%;padding:10px 13px;border-radius:13px;font-size:13.5px;line-height:1.62;white-space:pre-wrap;word-break:break-word;animation:mIn .22s ease-out}
+  @keyframes mIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+  .m.u{align-self:flex-end;background:var(--accent);color:#fff;border-bottom-right-radius:5px}
+  .m.a{align-self:flex-start;background:var(--panel2);border:1px solid #26325e;color:#dbe4ff;border-bottom-left-radius:5px}
+  .m.h{align-self:flex-start;background:#12302c;border:1px solid #235a52;color:#c9f5e6;border-bottom-left-radius:5px}
+  .m.sys{align-self:center;background:transparent;color:#7f90c4;font-size:11.5px;padding:2px;max-width:92%;text-align:center}
+  .m .who{display:block;font-size:11px;color:var(--human);margin-bottom:4px;font-weight:600}
+  .m.typing{color:#8aa0d8}
+  /* 长文本：可见滚动条 + 超长自动折叠 */
+  #msgs::-webkit-scrollbar{width:10px}
+  #msgs::-webkit-scrollbar-thumb{background:#2c3f7a;border-radius:5px}
+  #msgs::-webkit-scrollbar-thumb:hover{background:#3d55a0}
+  #msgs::-webkit-scrollbar-track{background:transparent}
+  .m.clamped{max-height:min(58vh,430px);overflow-y:auto;position:relative} /* clamp-fix-v2 */
+  .m.clamped::after{content:none}
+  .m.clamped::after{content:"";position:absolute;left:0;right:0;bottom:0;height:64px;background:linear-gradient(180deg,rgba(20,29,61,0),rgba(20,29,61,.98));pointer-events:none}
+  .more{margin-top:6px;font-size:11.5px;color:#8fb6ff;cursor:pointer;text-align:center;border-top:1px dashed #26325e;padding-top:5px}
+  .m a{color:#8fb6ff;word-break:break-all}
+  /* 消息/表格：无论窗口多小都要完整显示字（踩过：链接列把表格撑成竖排） */
+  .m{word-break:break-word;overflow-wrap:anywhere;min-width:0}
+  .hd-t{font-size:12px;color:#8fb6ff;margin-bottom:6px;font-weight:600}
+  .hd-e{font-size:11.5px;color:#8fa8d8;margin-bottom:6px}
+  .hd-scroll{overflow:auto;max-height:32vh;border-radius:8px}
+  .hd-tb{width:100%;border-collapse:collapse;font-size:11.5px;table-layout:fixed}
+  .hd-tb th{text-align:left;color:#8fb6ff;padding:4px 6px;border-bottom:1px solid #24365f;position:sticky;top:0;background:#0e1731;z-index:1}
+  .hd-tb td{padding:4px 6px;border-bottom:1px dashed #1d2c4e;color:#cfe0ff;word-break:break-word;overflow-wrap:anywhere;vertical-align:top;line-height:1.65}
+  .hd-tb th:nth-child(1),.hd-tb td:nth-child(1){width:32%}
+  .hd-tb th:nth-child(2),.hd-tb td:nth-child(2){width:46%}
+  .hd-tb th:nth-child(3),.hd-tb td:nth-child(3){width:22%}
+  /* 来电响铃 / 通话浮层 */
+  #callRing{position:fixed;inset:0;z-index:2147483001;display:flex;align-items:center;justify-content:center;background:rgba(6,11,26,.88);backdrop-filter:blur(4px)}
+  .cr-in{background:linear-gradient(150deg,#1b2a5e,#0f1730);border:1px solid #2c3f7a;border-radius:20px;padding:26px 30px;text-align:center;box-shadow:0 24px 60px rgba(0,0,0,.6);animation:crIn .3s ease-out}
+  @keyframes crIn{0%{transform:scale(.9);opacity:0}100%{transform:scale(1);opacity:1}}
+  .cr-av{font-size:52px;animation:crShake 1.1s infinite}
+  @keyframes crShake{0%,100%{transform:rotate(-9deg)}50%{transform:rotate(9deg)}}
+  .cr-t{font-size:16px;font-weight:700;margin-top:8px}
+  .cr-s{font-size:12.5px;color:#9db0e6;margin-top:6px}
+  .cr-b{display:flex;gap:12px;margin-top:18px;justify-content:center}
+  .cr-b button{border:none;border-radius:12px;padding:11px 22px;font-size:14px;font-weight:600;cursor:pointer;color:#fff}
+  .cr-yes{background:#3ddc97;color:#04241a !important}
+  .cr-no{background:#e5484d}
+  #callVid{position:fixed;inset:0;z-index:2147483002;background:#060b1a}
+  #callVid #cvRemote{width:100%;height:100%;object-fit:cover}
+  #callVid #cvLocal{position:absolute;right:14px;bottom:96px;width:22%;border-radius:12px;border:2px solid rgba(255,255,255,.25);background:#000}
+  #callVid #cvHang{position:absolute;left:50%;bottom:22px;transform:translateX(-50%);width:70px;height:70px;border-radius:50%;border:none;background:#e5484d;color:#fff;font-size:26px;cursor:pointer}
+  /* 角色条：单行横向滚动（不再换行撑出竖向滚动条） */
+  .rolebar{display:flex;gap:6px;flex-wrap:nowrap;overflow-x:auto;overflow-y:hidden;width:100%;max-width:100%;padding:2px 2px 7px;justify-content:flex-start;-webkit-overflow-scrolling:touch}
+  .rolebar::-webkit-scrollbar{height:6px}
+  .rolebar::-webkit-scrollbar-thumb{background:#2c3f7a;border-radius:3px}
+  .rolebar::-webkit-scrollbar-thumb:hover{background:#3d55a0}
+  .rolebar::-webkit-scrollbar-track{background:transparent}
+  .rolebar .rl{flex:0 0 auto;font-size:11.5px;padding:5px 10px;border-radius:12px;background:#1a2447;border:1px solid #26325e;color:#a9bcf0;cursor:pointer;white-space:nowrap}
+  .rolebar .rl:hover{border-color:#4f7cff;color:#fff}
+  .rolebar .rl.on{background:#4f7cff;border-color:#4f7cff;color:#fff}
+  /* 拖动：桌面宠物窗用原生拖拽区（比 JS 跟手得多） */
+  body.pet header{-webkit-app-region:drag;cursor:move}
+  body.pet header button,body.pet header .st,body.pet header .dot{-webkit-app-region:no-drag}
+  #dragGrip{display:none;-webkit-app-region:drag;cursor:move}
+  body.pet.collapsed #dragGrip{display:flex;position:fixed;top:2px;left:50%;transform:translateX(-50%);width:54px;height:14px;align-items:center;justify-content:center;color:#9db0e6;font-size:11px;letter-spacing:2px;background:rgba(15,23,48,.55);border-radius:8px;z-index:20;opacity:.7}
+  body.pet.collapsed #dragGrip:hover{opacity:1;background:rgba(79,124,255,.5);color:#fff}
+  body.pet.collapsed #hero{-webkit-app-region:no-drag}
+  /* 🔴 收起态小按钮：**跟着角色走的流内布局**（原来 position:fixed 贴窗口角，
+     窗口一旦比角色大，按钮就和角色分家、拖起来像"两半"）*/
+  #quickRow,#skinQuick,#dressQuick{display:none}
+  body.pet.collapsed aside > #quickRow{order:1;display:flex;gap:5px;align-items:center;justify-content:center}
+  body.pet.collapsed aside > #hero{order:2}
+  body.pet.collapsed #quickRow > div{
+    width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;
+    background:rgba(15,23,48,.72);color:#cfe0ff;cursor:pointer;border:1px solid rgba(120,150,220,.35);
+    transition:transform .12s ease,background .12s ease}
+  body.pet.collapsed #quickRow > div:hover{transform:scale(1.14)}
+  body.pet.collapsed #skinQuick{font-size:13px}
+  body.pet.collapsed #dressQuick{font-size:12px}
+  body.pet.collapsed #hideQuick{font-size:11px}
+  body.pet.collapsed #openQuick{font-size:12px}
+  body.pet.collapsed #skinQuick:hover{background:rgba(79,124,255,.85);color:#fff}
+  body.pet.collapsed #dressQuick:hover{background:rgba(235,92,138,.85);color:#fff}
+  body.pet.collapsed #hideQuick:hover{background:rgba(229,72,77,.85);color:#fff}
+  body.pet.collapsed #openQuick:hover{background:rgba(79,124,255,.85);color:#fff}
+  /* 拖动提示条：交给 JS 拖动，别再用 app-region（会和"任意部位拖"打架） */
+  body.pet.collapsed #dragGrip{-webkit-app-region:no-drag}
+  /* 互动图标条：**放在宠物上方**（原来压在它身上，她反馈很丑）；常驻占位、悬停才可见，避免布局跳动 */
+  #petActions{display:none}
+  body.pet.collapsed aside > #petActions{order:2;display:flex;flex-wrap:wrap;justify-content:center;
+    width:104px;gap:4px;margin:4px auto 0;visibility:hidden}
+  body.pet.collapsed:hover aside > #petActions{visibility:visible}
+  #petActions .pa{width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;cursor:pointer;
+    background:rgba(15,23,48,.86);border:1px solid rgba(120,150,220,.35);transition:transform .12s ease,background .12s ease}
+  #petActions .pa:hover{transform:scale(1.2);background:rgba(79,124,255,.9)}
+  @keyframes petBounce{0%{transform:translateY(0)}30%{transform:translateY(-10px) scale(1.04)}60%{transform:translateY(0)}80%{transform:translateY(-4px)}100%{transform:translateY(0)}}
+  body.pet.collapsed #hero.bounce{animation:petBounce .7s ease}
+  /* 主人离开时：挂个小牌子 + 整个人暗一点（像"家里没人"） */
+  #awayTag{display:none}
+  /* 看家时：用牌子占掉按钮那一格（同一格切换，窗口尺寸不变） */
+  body.pet.collapsed.away #awayTag{order:1;display:block;background:rgba(20,28,54,.92);color:#ffd88a;
+    font-size:9.5px;padding:3px 8px;border-radius:8px;border:1px solid rgba(255,200,90,.4);white-space:nowrap;pointer-events:none}
+  body.pet.collapsed.away #quickRow{display:none}
+  body.pet.collapsed.away #hero{filter:drop-shadow(0 6px 14px rgba(0,0,0,.5)) saturate(.8) brightness(.92)}
+  /* 说话气泡：占用顶部那条（说话时四个小按钮自动让位，不打架） */
+  #petBub{display:none}
+  body.pet.collapsed.speaking #petBub{display:block;position:fixed;left:4px;right:4px;top:5px;
+    background:linear-gradient(135deg,rgba(46,110,200,.97),rgba(28,64,150,.97));color:#eaf2ff;
+    font-size:11px;line-height:1.5;padding:7px 9px;border-radius:11px;text-align:center;
+    box-shadow:0 7px 20px rgba(0,0,0,.5);z-index:28;pointer-events:none;animation:bubIn .22s ease-out}
+  #petBub .more{display:block;margin-top:3px;font-size:10px;color:#a9c4ff}
+  body.pet.collapsed.speaking #petBub.canTap{pointer-events:auto;cursor:pointer;border:1px solid rgba(140,180,255,.55)}
+  body.pet.collapsed.speaking #skinQuick,body.pet.collapsed.speaking #dressQuick,
+  body.pet.collapsed.speaking #hideQuick,body.pet.collapsed.speaking #openQuick{display:none}
+  @keyframes bubIn{0%{opacity:0;transform:translateY(-6px)}100%{opacity:1;transform:translateY(0)}}
+  /* ===== 二次元通知：徽标数字 + 书卷式展开 ===== */
+  #openQuick{position:relative}
+  #openQuick .nbadge{display:none;position:absolute;top:-5px;right:-5px;min-width:16px;height:16px;padding:0 3px;
+    border-radius:9px;background:linear-gradient(135deg,#ffa8d0,#ff5f9e);color:#fff;font-size:9.5px;font-weight:800;
+    align-items:center;justify-content:center;box-shadow:0 0 0 1.5px #0f1a40,0 2px 6px rgba(255,95,158,.7);
+    animation:badgeGlow 1.9s ease-in-out infinite}
+  #openQuick.hasNew .nbadge{display:flex}
+  @keyframes badgeGlow{0%,100%{transform:scale(1);box-shadow:0 0 0 1.5px #0f1a40,0 2px 6px rgba(255,95,158,.7)}
+                       50%{transform:scale(1.14);box-shadow:0 0 0 1.5px #0f1a40,0 2px 12px rgba(255,95,158,1)}}
+  #notifyPanel{display:none}
+  #notifyPanel.on{display:block;position:fixed;left:50%;top:50%;z-index:2147483000;
+    width:min(342px,92vw);transform-origin:50% 0;
+    animation:scrollUnroll .6s cubic-bezier(.18,1.25,.32,1)}
+  @keyframes scrollUnroll{
+    0%{transform:translate(-50%,-50%) scaleY(.03);opacity:.25}
+    55%{transform:translate(-50%,-50%) scaleY(1.05);opacity:1}
+    100%{transform:translate(-50%,-50%) scaleY(1)}
+  }
+  #notifyPanel .np-roll{height:10px;border-radius:6px;
+    background:linear-gradient(180deg,#ffeaf4,#ffb8d9 45%,#e889b6);
+    box-shadow:0 2px 8px rgba(0,0,0,.4),0 0 0 1px rgba(255,255,255,.35) inset}
+  #notifyPanel .np-body{background:linear-gradient(180deg,#fffaf4,#fff2e4);
+    border-left:1px solid #f2dcc6;border-right:1px solid #f2dcc6;
+    padding:12px 13px;max-height:62vh;overflow:auto;box-shadow:0 14px 44px rgba(0,0,0,.55)}
+  #notifyPanel .np-title{text-align:center;font-size:13.5px;font-weight:800;color:#c2417a;margin-bottom:9px;letter-spacing:.5px}
+  #notifyPanel .np-sub{display:block;font-size:10px;font-weight:400;color:#c9a7bb;margin-top:2px;letter-spacing:0}
+  #notifyPanel .np-item{background:#fff;border:1px solid #ffe1ef;border-radius:11px;padding:9px 11px;margin-bottom:8px;
+    box-shadow:0 2px 9px rgba(255,160,200,.2)}
+  #notifyPanel .np-item .who{font-weight:700;color:#3c3a5e;font-size:12.5px}
+  #notifyPanel .np-item .meta{color:#8a7f92;font-size:11.5px;line-height:1.7;margin-top:3px}
+  #notifyPanel .np-item .tel{color:#e0508f;font-weight:600;text-decoration:none}
+  #notifyPanel .np-item.pending{border-color:#ffe0b0;background:#fffdf6}
+  #notifyPanel .np-foot{text-align:center;font-size:10.5px;color:#c9a7bb;margin-top:4px}
+  /* ===== 情境画面：点互动 → 灵宠"进入"那个场景（背景 + 道具 + 姿态 + 字幕）===== */
+  #petScene{display:none}
+  body.pet.collapsed.scene #petScene{display:block;position:fixed;inset:0;z-index:4;pointer-events:none;overflow:hidden;
+    animation:sceneIn .34s ease-out}
+  /* 情境背景：sally 2026-09-19 反馈"背景更大更黑" → 由"铺满整窗的深色板"收成"贴着角色的一张柔光小卡"，
+     不透明度和面积都收掉一截，演出感还在，但桌面上不再是一大块黑。 */
+  #petScene .sc-bg{position:absolute;left:3px;right:3px;top:16px;bottom:5px;border-radius:14px;
+    background:linear-gradient(160deg,var(--sc-c1,#2b3f6e),var(--sc-c2,#16203c));opacity:.72}
+  #petScene .sc-prop{position:absolute;font-size:15px;filter:drop-shadow(0 2px 4px rgba(0,0,0,.45));
+    animation:propFloat 2.6s ease-in-out infinite}
+  #petScene .sc-cap{position:absolute;left:50%;bottom:3px;transform:translateX(-50%);
+    background:rgba(8,14,32,.88);color:#dbe4ff;font-size:10px;padding:2px 8px;border-radius:8px;
+    white-space:nowrap;max-width:126px;overflow:hidden;text-overflow:ellipsis}
+  @keyframes propFloat{0%,100%{transform:translateY(0) rotate(-5deg)}50%{transform:translateY(-7px) rotate(6deg)}}
+  @keyframes sceneIn{0%{opacity:0;transform:scale(.94)}100%{opacity:1;transform:scale(1)}}
+  /* 姿态：宠物本体做形变（躺着/坐着/跑起来） */
+  body.pet.collapsed #hero{position:relative;z-index:6;transition:transform .35s ease}
+  body.pet.collapsed.scene #hero.walking{animation:none}   /* 演出时先别走 */
+  body.pet.collapsed.scene #hero.pose-sit{transform:translateY(10px) scaleY(.92)}
+  body.pet.collapsed.scene #hero.pose-sleep{transform:rotate(-76deg) translateY(-4px)}
+  body.pet.collapsed.scene #hero.pose-run{transform:skewX(-10deg) translateY(-3px)}
+  body.pet.collapsed.scene #hero.pose-jump{transform:translateY(-9px)}
+  body.pet.collapsed.scene #hero.pose-lean{transform:rotate(7deg)}
+  body.pet.collapsed.scene #hero.pose-shop{transform:rotate(-5deg) translateX(3px)}
+  /* 角色条：加宽滚动条 + 支持滚轮横滑 */
+  .rolebar{scrollbar-width:thin}
+  .rolebar::-webkit-scrollbar{height:10px}
+  .rolebar::-webkit-scrollbar-thumb{background:#3a4f8f;border-radius:5px;border:2px solid transparent;background-clip:content-box}
+  .rolebar::-webkit-scrollbar-thumb:hover{background:#5b78c8;background-clip:content-box}
+  /* 养生提醒气泡 */
+  .hbub{position:fixed;left:50%;top:8px;transform:translateX(-50%);box-sizing:border-box;min-width:86px;max-width:min(320px,calc(100vw - 12px));word-break:break-word;background:linear-gradient(135deg,rgba(46,124,94,.97),rgba(28,88,68,.97));color:#eafff4;font-size:11.5px;line-height:1.65;padding:9px 12px;border-radius:12px;box-shadow:0 8px 24px rgba(0,0,0,.5);z-index:30;animation:hbIn .4s ease-out;cursor:pointer;border:1px solid rgba(120,230,180,.35)}
+  body.pet.collapsed .hbub{top:2px;font-size:10.5px;line-height:1.55;padding:6px 9px;border-radius:10px}
+  .hbub b{display:block;font-size:12.5px;margin-bottom:3px;color:#fff}
+  .hbub .hm{color:#bff5dc;margin-top:5px;font-size:11px}
+  @keyframes hbIn{0%{opacity:0;transform:translateX(-50%) translateY(-12px)}100%{opacity:1;transform:translateX(-50%) translateY(0)}}
+  aside{overflow-x:hidden}
+  /* 小窗自适应：窗口拉小了也要能看清字 */
+  @media (max-width: 430px){
+    header{padding:5px 8px;gap:6px}
+    header h1{font-size:11.5px}
+    header .st{font-size:10px}
+    header button{font-size:11px;padding:4px 7px}
+    #diag{font-size:10px;padding:2px 7px}
+    .m{font-size:12px;line-height:1.65;padding:8px 10px;border-radius:10px}
+    #msgs{padding:8px 9px;gap:8px}
+    #bar{padding:7px 8px;gap:6px}
+    #txt{font-size:12.5px;padding:8px 10px}
+    #bar button{font-size:12px;padding:0 9px}
+    aside{padding:6px 8px;gap:6px}
+    .rolebar .rl{font-size:10px;padding:3px 7px}
+    #chips{padding:0 8px 6px;gap:5px}
+    #chips button,.chip{font-size:10.5px;padding:4px 8px}
+    .sv-wrap{width:96vw}
+  }
+  @media (max-width: 340px){
+    .m{font-size:11.5px}
+    header h1{font-size:10.5px}
+    header .st{display:none}
+  }
+  #chips{display:flex;gap:7px;flex-wrap:wrap;padding:0 20px 10px;flex:0 0 auto;max-height:34%;overflow-y:auto}
+  .chip{font-size:12px;background:var(--panel2);border:1px solid var(--line);color:#a9bcf0;padding:6px 11px;border-radius:15px;cursor:pointer}
+  .chip:hover{border-color:var(--accent);color:#fff}
+  #bar{display:flex;gap:9px;padding:12px 20px;border-top:1px solid var(--line);background:#0c1330;flex:0 0 auto}
+  #txt{flex:1;background:#151f42;border:1px solid var(--line);color:var(--txt);border-radius:11px;padding:11px 13px;font-size:13.5px;outline:none}
+  #txt:focus{border-color:var(--accent)}
+  #send{background:var(--accent);border:none;color:#fff;border-radius:11px;padding:0 20px;font-size:13.5px;font-weight:600;cursor:pointer}
+  #send:hover{background:#6b91ff}
+  /* 设置 */
+  #modal{position:fixed;inset:0;background:rgba(4,8,20,.72);display:none;align-items:center;justify-content:center;z-index:99}
+  #modal.open{display:flex}
+  .sheet{width:520px;max-width:92vw;background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:20px 22px}
+  .sheet h3{margin:0 0 12px;font-size:15px}
+  .sheet label{display:block;font-size:12px;color:var(--dim);margin:12px 0 6px}
+  .sheet input,.sheet select{width:100%;background:#151f42;border:1px solid var(--line);color:var(--txt);border-radius:9px;padding:9px 11px;font-size:13px;outline:none}
+  .sheet .acts{display:flex;gap:9px;margin-top:18px;justify-content:flex-end}
+  @media(max-width:820px){aside{display:none}.m{max-width:88%}}
+  /* 宠物模式（?pet=1）：立绘横条 + 聊天，适合小窗/桌面悬浮 */
+  body.pet main{flex-direction:column}
+  body.pet aside{display:flex;width:100%;flex:0 0 auto;flex-direction:row;align-items:center;gap:10px;border-right:none;border-bottom:1px solid var(--line);padding:8px 12px}
+  body.pet #hero{width:76px;height:122px;flex:0 0 76px}
+  body.pet #hero .sp-svg{width:76px;height:122px}
+  body.pet #hero .sp-portal{width:60px}
+  body.pet .heroName{font-size:13px;margin:0}
+  body.pet .slogan,body.pet .hint,body.pet .row,body.pet .petWrap{display:none}
+  /* 宠物窗里也保留角色条（单行横向滚动，紧凑） */
+  body.pet #roles{padding:4px 10px 6px;background:#0c1330;border-bottom:1px solid #1b2648}
+  body.pet #roles .rl{font-size:11px;padding:4px 8px}
+  /* 宠物窗顶部状态条：一眼看出哪里没通 */
+  #diag{display:none;font-size:11px;padding:3px 10px;background:#0c1330;border-bottom:1px solid #1b2648;color:#8aa0d8;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  body.pet #diag{display:block}
+  #diag b{color:#3ddc97}
+  #diag i{color:#ffb454;font-style:normal}
+  #diag u{color:#ff6b8f;text-decoration:none}
+  body.pet.collapsed #diag{position:fixed;top:20px;left:0;right:0;background:transparent;border:none;text-align:center;font-size:10px;opacity:.6;padding:0 6px}
+  body.pet header{padding:6px 12px}
+  body.pet header h1{font-size:13px}
+  body.pet #chips{padding:0 12px 8px}
+  body.pet #msgs{padding:10px 12px}
+  body.pet #bar{padding:8px 12px}
+  /* 收起态：只留 sally 一个人，像个桌面灵宠 */
+  body.pet.collapsed header,body.pet.collapsed section{display:none}
+  /* 🔴 收起态整页禁滚动 + 干掉所有会"渗出窗口"的装饰 */
+  body.pet{overflow:hidden}
+  body.pet.collapsed{overflow:hidden;background:transparent}
+  body.pet.collapsed #diag{display:none}          /* 调试条 */
+  /* 🔴 黑边真凶：#side 用 translateX(-100%) 移出屏幕了，但它的 box-shadow(8px 0 26px) 还会往右渗进窗口
+     → 左侧出现一条黑边。收起态直接不渲染它。 */
+  body.pet.collapsed #side{display:none}
+  body.pet.collapsed main{align-items:flex-end;justify-content:center;background:transparent;overflow:hidden}
+  body.pet.collapsed aside{flex-direction:column;justify-content:flex-start;align-items:center;gap:2px;border-bottom:none;background:transparent;height:100vh;padding:4px 0 2px;overflow:hidden}
+  /* 个头再收小一点 */
+  body.pet.collapsed #hero{width:112px;height:180px;flex:0 0 auto;cursor:pointer;filter:drop-shadow(0 6px 12px rgba(0,0,0,.4))}
+  body.pet.collapsed #hero .sp-svg{width:112px;height:180px}
+  body.pet.collapsed #hero .sp-portal{width:88px}
+  body.pet.collapsed .heroName{display:none}
+  body.pet.collapsed .slogan{display:none}
+  body.pet.collapsed .petWrap,body.pet.collapsed .row,body.pet.collapsed #roles,body.pet.collapsed .hint{display:none}
+  /* 收起态的小提示（悬停出现） */
+  #petHint{display:none}
+  body.pet.collapsed #petHint{display:block;position:fixed;left:50%;bottom:3px;transform:translateX(-50%);background:rgba(15,23,48,.86);color:#dbe4ff;font-size:10px;padding:2px 8px;border-radius:9px;white-space:nowrap;pointer-events:none;opacity:.7}
+  body.pet.collapsed #hero:hover{filter:drop-shadow(0 10px 18px rgba(79,124,255,.55))}
+  body.pet.collapsed{background:transparent}
+  /* 小灵宠皮肤下的尺寸微调 */
+  body.sally-skin-creature.pet.collapsed #hero{width:122px;height:152px}
+  body.sally-skin-creature.pet.collapsed #hero .sp-svg{width:122px;height:152px}
+  body.sally-skin-creature.pet.collapsed #hero .sp-portal{width:80px}
+  body.sally-skin-creature.pet #hero{width:92px;height:116px;flex:0 0 92px}
+  body.sally-skin-creature.pet #hero .sp-svg{width:92px;height:116px}
+  /* 动漫式走路：上下颠 + 左右轻摆（移动时由主进程点亮 .walking） */
+  @keyframes petWalk{
+    0%{transform:translateY(0) rotate(0deg)}
+    25%{transform:translateY(-5px) rotate(-2.2deg)}
+    50%{transform:translateY(0) rotate(0deg)}
+    75%{transform:translateY(-5px) rotate(2.2deg)}
+    100%{transform:translateY(0) rotate(0deg)}
+  }
+  body.pet.collapsed #hero.walking{animation:petWalk .58s ease-in-out infinite;transform-origin:50% 100%}
+  /* 站着时轻轻呼吸（不动的也有人气） */
+  @keyframes petIdle{0%,100%{transform:translateY(0)}50%{transform:translateY(-2.5px)}}
+  body.pet.collapsed #hero.idle{animation:petIdle 3.4s ease-in-out infinite}
+  /* 🔴 演出情境时，必须把走路/呼吸动画都关掉 —— CSS animation 的 transform 会盖掉 pose-* 的 transform，
+     否则"睡觉躺下"根本不生效（实测踩过：点了睡觉还是站着） */
+  body.pet.collapsed.scene #hero.idle,body.pet.collapsed.scene #hero.walking{animation:none}
+  /* 拖拽文件进窗口时的高亮 */
+  body.dropping::after{content:'📎 松手就贴进来（图片 / Excel / PDF 都行）';position:fixed;inset:0;z-index:2147483600;
+    display:flex;align-items:center;justify-content:center;background:rgba(10,18,40,.72);backdrop-filter:blur(3px);
+    border:3px dashed #4f7cff;border-radius:14px;color:#dbe4ff;font-size:14px;font-weight:600;pointer-events:none}
+  /* 有新版本横幅（比系统弹窗可靠 —— 弹窗挂在透明小窗上会看不见） */
+  #upBar{display:none;position:fixed;left:50%;top:8px;transform:translateX(-50%);z-index:2147483601;
+    background:linear-gradient(135deg,#2b4fd8,#1a3a8f);color:#fff;font-size:12.5px;padding:7px 14px;border-radius:11px;
+    box-shadow:0 6px 20px rgba(0,0,0,.45);cursor:pointer;white-space:nowrap;align-items:center;gap:8px}
+  #upBar.on{display:flex}
+  #upBar b{background:rgba(255,255,255,.22);padding:2px 8px;border-radius:7px;font-size:11.5px}
+
+  /* =====================================================================
+     简约工作风（默认开启）—— sally 2026-09-19 要求：「要设计符合人类工作和简约交流习惯」
+     做法：把"游戏夜曲风"换成"办公软件风"——白底、细边框、深灰字、弱化装饰，
+           长文/表格/链接在浅色下更好读（这才是工作场景真正在用的东西）。
+     范围：只作用于【展开态】body.work:not(.collapsed)。
+           桌面上的收起态灵宠完全不受影响（那里必须保持透明，不能被任何底色污染）。
+     回退：☰ 侧边栏 →「🎨 界面风格」一键切回夜曲；选择记在 localStorage。
+     ===================================================================== */
+  body.work:not(.collapsed){background:#f5f7fb;color:#1b2437}
+  body.work:not(.collapsed) header{background:#fff;border-bottom:1px solid #e5eaf3;box-shadow:0 1px 2px rgba(20,30,60,.03)}
+  body.work:not(.collapsed) header h1{color:#1b2437;font-size:14.5px}
+  body.work:not(.collapsed) header .st{color:#7d8aa6}
+  body.work:not(.collapsed) header button{background:#f4f6fb;border:1px solid #e2e8f3;color:#5c6b8a}
+  body.work:not(.collapsed) header button:hover{border-color:#4f7cff;color:#2b4bd6}
+  /* 侧边栏 */
+  body.work:not(.collapsed) #side{background:#fff;border-right:1px solid #e5eaf3;box-shadow:8px 0 26px rgba(20,30,60,.08)}
+  body.work:not(.collapsed) #side .sd-h{color:#1b2437}
+  body.work:not(.collapsed) #side .sd-x{color:#9aa6bf}
+  body.work:not(.collapsed) #side .sd-g{color:#a3adc4}
+  body.work:not(.collapsed) #side .sd-i{color:#4a5878}
+  body.work:not(.collapsed) #side .sd-i:hover{background:#f2f5fb;color:#1b2437}
+  body.work:not(.collapsed) #side .sd-s{background:#eef1f7}
+  /* 左栏（灵宠） */
+  body.work:not(.collapsed) aside{background:#fff;border-right:1px solid #e5eaf3}
+  body.work:not(.collapsed) .heroName{color:#1b2437}
+  body.work:not(.collapsed) .slogan{color:#8b97b2}
+  body.work:not(.collapsed) .petWrap{background:#f7f9fd;border-color:#e8ecf5;color:#7d8aa6}
+  body.work:not(.collapsed) .petWrap .bar{background:#e8ecf5}
+  body.work:not(.collapsed) .btn{background:#f4f6fb;border-color:#e2e8f3;color:#5c6b8a}
+  body.work:not(.collapsed) .btn:hover{border-color:#4f7cff;color:#2b4bd6}
+  body.work:not(.collapsed) .btn.p{background:#4f7cff;border-color:#4f7cff;color:#fff}
+  body.work:not(.collapsed) .btn.p:hover{background:#3f6cf0}
+  body.work:not(.collapsed) .hint{background:#f7f9fd;border-color:#e2e8f3;color:#8b97b2}
+  body.work:not(.collapsed) #roles{background:#fff;border-bottom:1px solid #eef1f7}
+  body.work:not(.collapsed) .rolebar .rl{background:#f4f6fb;border-color:#e2e8f3;color:#5c6b8a}
+  body.work:not(.collapsed) .rolebar .rl:hover{border-color:#c3d0ea;color:#2b4bd6}
+  body.work:not(.collapsed) .rolebar .rl.on{background:#4f7cff;border-color:#4f7cff;color:#fff}
+  /* 右栏（对话）—— 办公读感：白底气泡 + 深灰字 + 极浅投影 */
+  body.work:not(.collapsed) section{background:#f5f7fb}
+  body.work:not(.collapsed) #msgs::-webkit-scrollbar-thumb{background:#d3dbeb}
+  body.work:not(.collapsed) #msgs::-webkit-scrollbar-thumb:hover{background:#bcc7de}
+  body.work:not(.collapsed) .m.a{background:#fff;border:1px solid #e8ecf5;color:#1b2437;box-shadow:0 1px 2px rgba(20,30,60,.04)}
+  body.work:not(.collapsed) .m.h{background:#eefaf4;border:1px solid #cdeee0;color:#1d5c47}
+  body.work:not(.collapsed) .m.sys{color:#98a4bd}
+  body.work:not(.collapsed) .m a{color:#2b6cf6}
+  body.work:not(.collapsed) .m .who{color:#0e9f6e}
+  body.work:not(.collapsed) .m.clamped::after{background:linear-gradient(180deg,rgba(255,255,255,0),#fff)}
+  body.work:not(.collapsed) .more{color:#2b6cf6;border-top-color:#eef1f7}
+  body.work:not(.collapsed) .hd-t{color:#2b6cf6}
+  body.work:not(.collapsed) .hd-e{color:#8b97b2}
+  body.work:not(.collapsed) .hd-tb th{color:#5c6b8a;background:#f7f9fd;border-bottom:1px solid #e8ecf5}
+  body.work:not(.collapsed) .hd-tb td{color:#1b2437;border-bottom:1px dashed #eef1f7}
+  body.work:not(.collapsed) #hud{background:#fff!important;border-color:#e5eaf3!important;color:#1b2437}
+  /* 输入区：功能键统一成中性灰，只保留「发送/语音/视频」三个有语义的颜色 */
+  body.work:not(.collapsed) #bar{background:#fff;border-top:1px solid #e5eaf3}
+  body.work:not(.collapsed) #txt{background:#f5f7fb;border-color:#e2e8f3;color:#1b2437}
+  body.work:not(.collapsed) #txt::placeholder{color:#a3adc4}
+  body.work:not(.collapsed) #txt:focus{background:#fff;border-color:#4f7cff}
+  body.work:not(.collapsed) #bar button:not(#send):not(#call):not(#video){background:#f4f6fb!important;border:1px solid #e2e8f3!important;color:#5c6b8a!important}
+  body.work:not(.collapsed) #send{background:#4f7cff!important;border:1px solid #4f7cff!important;color:#fff!important}
+  body.work:not(.collapsed) #chips button,body.work:not(.collapsed) .chip{background:#fff;border:1px solid #e2e8f3;color:#4a5878}
+  body.work:not(.collapsed) #chips button:hover,body.work:not(.collapsed) .chip:hover{border-color:#4f7cff;color:#2b4bd6}
+  /* 设置弹窗 */
+  body.work:not(.collapsed) #modal{background:rgba(20,30,60,.42)}
+  body.work:not(.collapsed) .sheet{background:#fff;border-color:#e5eaf3;color:#1b2437}
+  body.work:not(.collapsed) .sheet label{color:#5c6b8a}
+  body.work:not(.collapsed) .sheet select,body.work:not(.collapsed) .sheet input{background:#f5f7fb;border-color:#e2e8f3;color:#1b2437}
+</style>
+<link rel="apple-touch-icon" href="./icon-192.png">
+<link rel="stylesheet" href="./rb-tablet.css?v=20261027">
+<script src="./config.js"></script>
+<script src="./rb-client.js?v=20261027" defer></script>
+</head>
+<body>
+<!-- 界面风格：默认「夜曲」（深色，和之前一致）；想试浅色工作台就点 ☰ →「🎨 界面风格」。
+     2026-09-19 sally 澄清：她要改的是"对话理解和沟通模式"，不是底色 → 所以这里默认改回深色，
+     浅色那套 CSS 保留着（body.work 那段），谁想用随时切，不再默认套上。 -->
+<script>try{ if(localStorage.getItem('sally_ui')==='work') document.body.classList.add('work'); }catch(e){}</script>
+<div id="upBar" onclick="__sallyApplyUpdate()">🎁 发现新版本 <b id="upVer"></b> · 点我立即升级</div>
+<header>
+  <!-- 🔴 顶栏做减法（sally 2026-09-19：「要符合人类工作和简约交流习惯」）：
+       原来 9 个按钮挤一排（皮肤/绑定/账号/收起/设置/全屏/最小化/关闭）→ 现在只留 6 个，
+       换形象 / 绑定 / 账号 都挪进 ☰ 侧边栏（那里本来就有对应入口），顶栏回归"标题 + 状态 + 窗口键"的常规软件布局。 -->
+  <button id="sideBtn" title="侧边栏（换形象 / 绑定 / 账号 / 界面风格 都在这里）" style="background:#1a2447;border:1px solid var(--line);color:var(--dim);border-radius:9px;padding:5px 10px;cursor:pointer;font-size:14px">☰</button>
+  <span class="dot" id="dot"></span>
+  <h1>🎐 RB小仁同学</h1>
+  <span class="sp"></span>
+  <span id="watchPill" title="桌面行为守望：本地动作级上下文，不采集键盘原文">守望中</span>
+  <span class="st" id="st">连接中…</span>
+  <button id="refreshBtn" onclick="__sallyRefresh()" title="刷新：重连后端 / 重新读取最新配置（不动聊天记录）" style="background:#1a2447;border:1px solid var(--line);color:var(--dim);border-radius:9px;padding:4px 9px;cursor:pointer;font-size:14px;line-height:1">⟳</button>
+  <button id="verBtn" onclick="__sallyCheckUpdate()" title="点我检查更新" style="background:#1a2447;border:1px solid var(--line);color:var(--dim);border-radius:9px;padding:5px 9px;cursor:pointer;font-size:12px">v—</button>
+  <button id="collapseBtn" onclick="toggleCollapse()" title="收起后只留 sally 一个人，点她可再展开">▾ 收起</button>
+  <span style="width:1px;height:18px;background:var(--line);margin:0 2px"></span>
+  <button id="fsBtn" title="全屏" style="background:#1a2447;border:1px solid var(--line);color:var(--dim);border-radius:9px;padding:5px 11px;cursor:pointer;font-size:13px">⛶</button>
+  <button id="minBtn" title="最小化（放入任务栏）" style="background:#1a2447;border:1px solid var(--line);color:var(--dim);border-radius:9px;padding:5px 11px;cursor:pointer;font-size:13px">➖</button>
+  <button onclick="openCfg()" title="设置" style="background:#1a2447;border:1px solid var(--line);color:var(--dim);border-radius:9px;padding:5px 11px;cursor:pointer;font-size:13px">⚙</button>
+  <button id="closeBtn" title="关闭（收进托盘，可用 Ctrl+Alt+S 叫回）" style="background:#1a2447;border:1px solid #5a3040;color:#ff8fa3;border-radius:9px;padding:5px 11px;cursor:pointer;font-size:13px">✕</button>
+<style>
+#refreshBtn.spin{animation:sallySpin .7s linear infinite;color:#7fd4ff;border-color:#3a6a9a}
+#refreshBtn:disabled{opacity:.6;cursor:default}
+@keyframes sallySpin{from{transform:rotate(0)}to{transform:rotate(360deg)}}
+</style>
+</header>
+
+<style>
+#side{position:fixed;left:0;top:0;bottom:0;width:218px;background:#0f1a40;border-right:1px solid var(--line);transform:translateX(-100%);transition:transform .18s ease;z-index:99999;display:flex;flex-direction:column;box-shadow:8px 0 26px rgba(0,0,0,.4)}
+#side.open{transform:translateX(0)}
+#side .sd-h{font-weight:700;font-size:13px;padding:12px 14px 8px;color:#cfe0ff;display:flex;justify-content:space-between;align-items:center;flex:0 0 auto}
+#side .sd-h .sd-x{cursor:pointer;color:var(--dim);font-size:15px;padding:0 4px}
+#side .sd-body{flex:1 1 auto;overflow-y:auto;padding:0 10px 16px}
+#side .sd-body::-webkit-scrollbar{width:6px}
+#side .sd-body::-webkit-scrollbar-thumb{background:#2a3a68;border-radius:3px}
+#side .sd-g{font-size:10.5px;color:#5b6b8f;margin:11px 6px 4px;letter-spacing:.5px}
+#side .sd-i{padding:7px 10px;border-radius:9px;font-size:12.5px;color:var(--dim);cursor:pointer;margin-bottom:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#side .sd-i:hover{background:#1a2447;color:#fff}
+#side .sd-s{height:1px;background:var(--line);margin:8px 4px}
+/* 🔴 侧栏必须整体退出拖拽区：只要有一个祖先带 -webkit-app-region:drag，
+   整块区域就会被 Windows 当成"拖窗口的手柄"，里面的 ✕ 和每一项都点不动（点下去只拖动窗口）。 */
+#side, #side *{-webkit-app-region:no-drag !important}
+#side .sd-h .sd-x{padding:2px 8px;border-radius:7px;font-size:15px;min-width:22px;text-align:center}
+#side .sd-h .sd-x:hover{background:#2a2036;color:#fff}
+</style>
+<div id="side">
+  <div class="sd-h"><span>🎐 RB小仁同学</span><span class="sd-x" id="sideX" title="关闭侧栏（Esc）" onclick="try{window.__sallyCloseSide?window.__sallyCloseSide():document.getElementById('side').classList.remove('open')}catch(e){}">✕</span></div>
+  <div class="sd-body">
+  <div class="sd-i" data-go="new">🆕 新话题</div>
+  <div class="sd-i" data-go="book">👥 通讯录</div>
+  <div class="sd-i" data-go="roles">🎭 换角色</div>
+  <div class="sd-i" data-go="skin">👧 换形象（人物 / 小灵宠）</div>
+  <div class="sd-i" data-go="theme">🎨 界面风格：简约工作</div>
+  <div class="sd-g">本机</div>
+  <div class="sd-i" data-go="leave">🌴 谁在休假 / 出差</div>
+  <div class="sd-i" data-go="notify">🔔 动态（休假 / 审批）</div>
+  <div class="sd-i" data-go="devices">🖥 本机设备 / 打印机</div>
+  <div class="sd-i" data-go="habits">🧭 我的工作习惯</div>
+  <div class="sd-i" data-go="creds">🔑 账号（自动登录）</div>
+  <div class="sd-i" data-go="bind">🔗 绑定平台</div>
+  <div class="sd-g">公司系统</div>
+  <div class="sd-i" data-go="erp">🏭 中控台首页</div>
+  <div class="sd-i" data-go="learn">📚 学习中心</div>
+  <div class="sd-i" data-go="prices">💰 价格表</div>
+  <div class="sd-i" data-go="leads">👤 客资 / 线索</div>
+  <div class="sd-i" data-go="minutes">📝 会议纪要</div>
+  <div class="sd-i" data-go="schedule">🗓 排班 / 考勤</div>
+  <div class="sd-i" data-go="salary">💵 工资测算</div>
+  <div class="sd-i" data-go="report">📊 工作汇报</div>
+  <div class="sd-i" data-go="social">💬 社媒回复</div>
+  <div class="sd-g">官网</div>
+  <div class="sd-i" data-go="site">🏠 公司官网</div>
+  <div class="sd-i" data-go="silande">🔷 思蓝德官网</div>
+  <div class="sd-i" data-go="products">📦 产品目录</div>
+  <div class="sd-i" data-go="openacct">🌐 开户门户</div>
+  <div class="sd-g">平台后台</div>
+  <div class="sd-i" data-go="alibaba">🛒 阿里国际站</div>
+  <div class="sd-i" data-go="douyin">🎵 抖店</div>
+  <div class="sd-i" data-go="pdd">🅿️ 拼多多</div>
+  <div class="sd-i" data-go="ali1688">🔢 1688</div>
+  <div class="sd-i" data-go="qianniu">🐱 千牛</div>
+  <div class="sd-i" data-go="temu">📦 TEMU</div>
+  <div class="sd-i" data-go="tiktok">🎬 TikTok Shop</div>
+  <div class="sd-g">AI 工具</div>
+  <div class="sd-i" data-go="accio">🤖 Accio Work</div>
+  <div class="sd-i" data-go="gemini">✨ Gemini</div>
+  <div class="sd-i" data-go="libtv">🎞 libtv（AI 视频）</div>
+  <div class="sd-i" data-go="codex">💻 ChatGPT / Codex</div>
+  <div class="sd-g">其它</div>
+  <div class="sd-i" data-go="cfg">⚙ 设置</div>
+  <div class="sd-i" data-go="full">⛶ 全屏</div>
+  </div>
+</div>
+<div id="diag">诊断中…</div>
+
+<main>
+  <aside>
+    <div id="hero" title="点我聊天 / 拍拍我"></div>
+    <div id="guardTip" role="status" aria-live="polite"><div class="gt"><span class="gi">提示</span><b class="gtitle">我看到一个动作</b><button class="gx" aria-label="关闭提示">×</button></div><div class="gb"></div><div class="ga"><button class="gr">查看这一步</button><button class="gc">继续</button></div></div>
+    <div class="heroName">RB小仁同学</div>
+    <div class="slogan" id="slogan"></div>
+    <div id="petHint">按住我任意部位都能拖 · 点我聊天</div>
+    <div id="dragGrip" title="按住这里拖动 sally">⠿ ⠿ ⠿</div>
+    <!-- 🔴 小按钮改成"跟着角色走"的流内布局（原来是 position:fixed 贴窗口角，
+         窗口一旦比角色大，按钮和角色就会分家） -->
+    <div id="quickRow">
+      <div id="skinQuick" title="切换 人物 / 小灵宠">🐣</div>
+      <div id="dressQuick" title="换一套衣服（18 套轮着来）">👗</div>
+      <div id="hideQuick" title="隐藏 sally（Ctrl+Alt+S 叫回）">🙈</div>
+      <div id="openQuick" title="展开聊天 / 看动态">💬<i class="nbadge" id="notifyNum">0</i></div>
+    </div>
+    <div id="awayTag">💤 主人外出中</div>
+    <div id="petScene"></div>
+    <div id="petBub"></div>
+    <!-- 二次元通知：徽标数字 → 点开像书卷一样展开 -->
+    <div id="notifyPanel">
+      <div class="np-roll"></div>
+      <div class="np-body">
+        <div class="np-title">✨ 公司动态 ✨<span class="np-sub">小仁同学 自动播报</span></div>
+        <div id="npList"></div>
+        <div class="np-foot">点空白处收起 ⌒</div>
+      </div>
+      <div class="np-roll"></div>
+    </div>
+    <div id="petActions">
+      <div class="pa" data-act="work"  title="上班">💼</div>
+      <div class="pa" data-act="study" title="上学">🎒</div>
+      <div class="pa" data-act="eat"   title="吃饭">🍚</div>
+      <div class="pa" data-act="sleep" title="睡觉">😴</div>
+      <div class="pa" data-act="game"  title="玩游戏">🎮</div>
+      <div class="pa" data-act="sport" title="运动">🏃</div>
+      <div class="pa" data-act="trip"  title="旅游">✈️</div>
+      <div class="pa" data-act="shop"  title="逛街">🛒</div>
+      <div class="pa" data-act="dice"  title="随机换一个场景">🎲</div>
+    </div>
+    <div class="petWrap"><span>🐾 亲密度</span><div class="bar"><i id="inti"></i></div><span id="lv">Lv.1</span></div>
+    <div class="row"><button class="btn p" onclick="doPat()">拍拍它</button><button class="btn" onclick="newTopic()">新话题</button></div>
+    <div id="roles" class="rolebar"></div>
+    <div id="hud" style="width:100%;display:none;background:linear-gradient(180deg,rgba(12,22,48,.97),rgba(8,14,32,.98));border:1px solid #2c3f7a;border-radius:12px;padding:10px 11px;max-height:38vh;overflow:auto"></div>
+    <!-- 🔴 删掉底部那排「学习中心 / 开户门户」按钮：☰ 侧边栏里已经有同名入口，属于重复占位（顶栏做减法的同一轮清理） -->
+    <div class="hint" id="modeHint"></div>
+  </aside>
+
+  <section>
+    <div id="msgs"></div>
+    <div id="chips"></div>
+    <div id="attPrev" style="display:none;padding:0 12px 6px"></div>
+    <div id="bar"><button id="att" title="发图片/文件（图片我能看懂）" style="background:#1a2447;border:1px solid var(--line);color:var(--dim);border-radius:11px;padding:0 12px;font-size:15px;cursor:pointer">📎</button><input id="txt" placeholder="说点什么，或让我帮你干活…" autocomplete="off"><button id="mic" title="语音输入（Chrome/Edge）" style="background:#1a2447;border:1px solid var(--line);color:var(--dim);border-radius:11px;padding:0 14px;font-size:15px;cursor:pointer">🎤</button><button id="call" title="实时语音对话（像打电话一样）" style="background:linear-gradient(135deg,#3ddc97,#22b783);border:none;color:#fff;border-radius:11px;padding:0 14px;font-size:15px;cursor:pointer">📞</button><button id="video" title="视频通话（打开摄像头，走系统浏览器最稳）" style="background:linear-gradient(135deg,#6b91ff,#4a6fe0);border:none;color:#fff;border-radius:11px;padding:0 14px;font-size:15px;cursor:pointer">📹</button><button id="send">发送</button></div>
+    <input type="file" id="filePick" accept="image/*,.txt,.csv,.md,.json,.log" style="display:none">
+  </section>
+</main>
+
+<div id="modal">
+  <div class="sheet">
+    <h3>⚙ 设置</h3>
+    <label>回答模式</label>
+    <select id="cfgMode">
+      <option value="cloud">云端（使用你配置的 API）</option>
+      <option value="local">本地模型（Ollama，完全离线/免费）</option>
+    </select>
+    <label>本地 Ollama 地址（本地模型模式用）</label>
+    <input id="cfgOllama" placeholder="http://127.0.0.1:11434/v1">
+    <label>本地模型名</label>
+    <input id="cfgModel" placeholder="qwen2.5:3b">
+    <label>提示音效</label>
+    <select id="cfgSound">
+      <option value="chime">治愈铃（动漫神清气爽风）</option>
+      <option value="soft">软萌蛋（Q弹游戏泡泡声）</option>
+      <option value="bleep">小鼓点（FC复古红白机）</option>
+      <option value="mute">静音（专注工作不打扰）</option>
+    </select>
+    <div class="hint" style="margin-top:12px"><b>推荐 qwen2.5:3b</b>（约 1.9G）；更大的模型通常质量更高，但响应更慢。使用前请自行安装 Ollama 并配置允许当前网页来源。</div>
+    <div class="acts"><button class="btn" onclick="closeCfg()">取消</button><button class="btn p" onclick="saveCfg()">保存</button></div>
+  </div>
+</div>
+
+<script>window.SALLY_NO_FLOAT = true;</script>
+<script src="./sally-sprite.js"></script>
+<script>
+(function(){
+  var OPEN_CONFIG = window.RB_CONFIG || {};
+  var API = OPEN_CONFIG.apiBase || '/api/assistant', INBOX = OPEN_CONFIG.inboxBase || '/api/inbox';
+  var PET_KEY='sally_pet_v1', CFG_KEY='sally_client_cfg_v1', HIST_KEY='sally_client_hist_v1';
+  var HIST=[], threadId=0, lastSeen=0, timer=null, busy=false;
+
+  var hero=document.getElementById('hero'), msgs=document.getElementById('msgs'), txt=document.getElementById('txt');
+  // ---- 动作守望提示：在人物头顶 / 任务区显示，不主动替用户拦截 ----
+  (function initActionGuard(){
+    var G=window.SallyGuard, tip=document.getElementById('guardTip');
+    if(!G||!tip) return;
+    var timer=null;
+    function hide(){ tip.classList.remove('on'); if(timer) clearTimeout(timer); }
+    G.on(function(p){
+      if(!p||p.kind==='expected'||p.kind==='cleared'||p.kind==='expected-done'){ if(p&&p.kind==='expected-done') hide(); return; }
+      var a=p.actual||{}, ex=p.expected||{}, mismatch=p.kind==='mismatch';
+      tip.querySelector('.gtitle').textContent=mismatch?'这一步好像偏了':(p.level==='high'?'先停一下，我看到了':'我看到你要做这一步');
+      tip.querySelector('.gb').textContent=mismatch
+        ? '你刚要点「'+(a.label||'这个按钮')+'」，但当前更像是「'+(ex.label||'下一步')+'」。我先不替你拦，给你看一眼。'
+        : '即将执行「'+(a.label||'这个动作')+'」。如果这不是你想要的，先别继续，我在这里帮你核对。';
+      if(ex.hint) tip.querySelector('.gb').textContent+=' '+ex.hint;
+      tip.className='on '+(p.level==='high'?'high':'');
+      var review=tip.querySelector('.gr'); review.style.display=ex.label?'':'none'; review.textContent=mismatch?'查看正确步骤':'让我看一下';
+      review.onclick=function(){ hide(); if(document.body.classList.contains('collapsed')) window.toggleCollapse(); sys(mismatch?('当前预期：'+(ex.label||'下一步')+(ex.step?' · 第 '+ex.step+' 步':'')):('我看到你要做：'+(a.label||'这个动作'))); };
+      tip.querySelector('.gc').onclick=function(){ hide(); G.mute(2600); };
+      tip.querySelector('.gx').onclick=hide;
+      if(timer) clearTimeout(timer); timer=setTimeout(hide,mismatch?10000:7000);
+      try{ hero.classList.remove('bounce'); void hero.offsetWidth; hero.classList.add('bounce'); }catch(e){}
+    });
+  })();
+  // ---- 桌面级全行为守望：接收本机观察器的动作时间线 ----
+  (function initDesktopWatch(){
+    var pill=document.getElementById('watchPill'), recent=[], lastAlert='', lastAlertAt=0;
+    window.SallyWorkflow={
+      classifyFile:function(file){
+        var n=String(file&&file.name||'').toLowerCase(), kind=/\.(mp4|mov|mkv|avi|webm|m4v)$/.test(n)?'video':/\.(docx?|pdf|xlsx?|csv|pptx?)$/.test(n)?'document':/\.(png|jpe?g|gif|webp|bmp)$/.test(n)?'image':/\.(zip|rar|7z)$/.test(n)?'archive':'other';
+        if(kind==='video') sys('我识别到这是视频素材。先问你发到哪里，不直接发布。');
+        else if(kind==='document') sys('我识别到这是文档。你要我打印、发给某个人，还是发到某个群？');
+        else if(kind==='image') sys('我识别到这是图片素材。你要我整理、编辑，还是发布？');
+        return {kind:kind,name:file&&file.name||''};
+      },
+      summary:function(days){ return window.sallyPet&&window.sallyPet.workflowSummary ? window.sallyPet.workflowSummary({days:days||7}) : Promise.resolve({ok:false,error:'需要桌面精灵'}); }
+    };
+    function label(item){
+      if(item&&item.password) return '受保护输入框';
+      var x=(item&&item.control)||''; if(x) return x;
+      return (item&&item.app ? item.app : '未知应用')+(item&&item.title ? ' · '+item.title : '');
+    }
+    function levelFor(item){
+      var s=label(item);
+      if(/关机|重启|删除|清空|移除|付款|支付|订单|发布|上线|覆盖|撤销|退出登录|关闭账户/.test(s)) return 'high';
+      if(/发送|发出|提交|打印|导出|执行|运行|同步|保存|确认|确定|继续|下一步|安装/.test(s)) return 'medium';
+      return '';
+    }
+    function setPill(text,paused){ if(!pill) return; pill.textContent=paused?'已暂停':(text||'守望中'); pill.classList.toggle('paused',!!paused); }
+    function describe(item){
+      var x=[item.app||'未知应用'];
+      if(item.title) x.push(item.title); if(item.control&&!item.password) x.push(item.control);
+      return x.join(' · ').slice(0,150);
+    }
+    window.__sallyShowWorkflowSummary=function(){
+      if(!window.sallyPet||!window.sallyPet.workflowSummary){ sys('工作习惯摘要需要桌面宠物版'); return; }
+      sys('正在整理最近 7 天的工作习惯…');
+      window.sallyPet.workflowSummary({days:7}).then(function(r){
+        if(!r||!r.ok){ sys('暂时还没有足够的行为样本'); return; }
+        var apps=(r.apps||[]).slice(0,6).map(function(x){return x.name+'（'+x.count+'次）';}).join('、')||'还没有';
+        var paths=(r.sequences||[]).slice(0,5).map(function(x){return x.path+'（'+x.count+'次）';}).join('；')||'还没有';
+        sys('最近 7 天我看到：常用应用 '+apps+'。常见切换路径：'+paths+'。我目前只记脱敏后的动作统计，还不会替你自动发布；继续使用后，我会把稳定路径整理成可确认的工作流。');
+      }).catch(function(){ sys('工作习惯摘要读取失败'); });
+    };
+    function onItem(item){
+      if(!item||!item.app) return;
+      if(/sally|electron/i.test(String(item.app)) && /RB小仁同学|sally-client/i.test(String(item.title||''))) return;
+      recent.push(item); if(recent.length>40) recent.shift();
+      setPill('守望：'+(item.app||'桌面'));
+      if(pill) pill.title='最近：'+describe(item)+'\n点击可暂停 / 恢复桌面守望';
+      var lv=levelFor(item), sig=(item.kind||'')+'|'+describe(item)+'|'+lv, now=Date.now();
+      if(lv && (item.kind==='click'||item.kind==='context') && (sig!==lastAlert || now-lastAlertAt>4500)){
+        lastAlert=sig; lastAlertAt=now;
+        if(window.SallyGuard&&window.SallyGuard.notify) window.SallyGuard.notify({kind:'risk',level:lv,actual:{label:label(item)},expected:null,blocked:false});
+      }
+    }
+    if(pill) pill.onclick=function(){
+      if(!window.sallyPet||!window.sallyPet.desktopWatchPause){ setPill('桌面版可用',true); return; }
+      var paused=pill.classList.contains('paused');
+      window.sallyPet.desktopWatchPause({paused:!paused}).then(function(r){ setPill('',!!(r&&r.paused)); sys(r&&r.paused?'桌面守望已暂停（不会读取桌面动作）':'桌面守望已恢复'); }).catch(function(){ sys('桌面守望开关失败'); });
+    };
+    if(window.sallyPet&&window.sallyPet.onDesktopEvent) window.sallyPet.onDesktopEvent(onItem);
+    if(window.sallyPet&&window.sallyPet.desktopWatchStatus) window.sallyPet.desktopWatchStatus().then(function(r){ if(r&&r.ok){ setPill('',!!r.paused); if(!r.enabled) setPill('守望关闭',true); } }).catch(function(){});
+    window.__sallyDesktopRecent=function(){ return recent.slice(); };
+  })();
+  var PET = /[?&]pet=1/.test(location.search);
+  if (PET) document.body.classList.add('pet');
+  // 收起 / 展开 —— 必须放在最前面，且不依赖 SallySprite（否则脚本一旦加载失败按钮就失灵）
+  window.toggleCollapse = function () {
+    document.body.classList.toggle('collapsed');
+    var c = document.body.classList.contains('collapsed');
+    var btn = document.getElementById('collapseBtn');
+    if (btn) btn.textContent = c ? '▴ 展开' : '▾ 收起';
+    try { localStorage.setItem('sally_pet_collapsed', c ? '1' : '0'); } catch (e) {}
+    try { if (window.sallyPet && window.sallyPet.setExpanded) window.sallyPet.setExpanded(!c); } catch (e) {}
+    if (!c) { try { document.getElementById('txt').focus(); } catch (e) {} }
+    try { setDiag(); } catch (e) {}
+  };
+  if (PET) {
+    // 只有"新外壳"（带窗口缩放能力）才默认收起成小灵宠；
+    // 老外壳若默认收起，会留一块看不见的点击区挡住桌面，所以老外壳保持展开。
+    var hasShell = !!(window.sallyPet && window.sallyPet.setExpanded);
+    var wasCollapsed = hasShell;
+    try { var v = localStorage.getItem('sally_pet_collapsed'); if (v !== null) wasCollapsed = (v === '1'); } catch (e) {}
+    if (wasCollapsed) { document.body.classList.add('collapsed'); var b0 = document.getElementById('collapseBtn'); if (b0) b0.textContent = '▴ 展开'; }
+    try { if (hasShell) window.sallyPet.setExpanded(!wasCollapsed); } catch (e) {}
+  }
+  // 立绘（容错：SallySprite 没加载成功也要能用）+ 支持 人物 / 小灵宠 皮肤
+  var SKIN = 'girl'; try { SKIN = localStorage.getItem('sally_skin_v1') || 'girl'; } catch (e) {}
+  if (SKIN === 'creature') document.body.classList.add('sally-skin-creature');
+  try {
+    hero.innerHTML = '<div class="sp-portal"></div><div class="sp-char">' + (SKIN === 'creature' ? window.SallySprite.mascotCreature() : window.SallySprite.mascot()) + '</div>';
+    document.getElementById('slogan').textContent = window.SallySprite.SLOGAN;
+  } catch (e) {
+    hero.innerHTML = '<div style="font-size:80px;line-height:1.2;text-align:center">🎐</div>';
+    document.getElementById('slogan').textContent = '我不需要阿拉丁神灯，我想成为那盏万能的灯，请把你的愿望告诉我试试吧！';
+  }
+  // ---- 养生提醒（喝水 / 活动 / 护眼 / 作息）----
+  var HEALTH = [
+    { k: 'water', t: '💧 喝水', s: '晨起一杯温开水，血脉通畅人不累。', m: '先喝 200ml 温水吧～' },
+    { k: 'water', t: '💧 喝水', s: '一日八杯慢慢饮，胜过病床打吊针。', m: '补水时间到，小口慢饮更养人' },
+    { k: 'water', t: '💧 喝水', s: '口干才喝已太迟，未渴先饮最合宜。', m: '别等渴了才喝，现在来一杯' },
+    { k: 'move', t: '🙆 活动', s: '久坐一小时，起身走三走；颈肩转一转，腰背松一松。', m: '起来动 3 分钟，转转脖子' },
+    { k: 'move', t: '🙆 活动', s: '常伸懒腰通经络，久坐不动最伤身。', m: '伸个懒腰、扩扩胸，30 秒就够' },
+    { k: 'eye', t: '👀 护眼', s: '二十二十再二十：看屏 20 分，望 20 尺，歇 20 秒。', m: '远眺 20 秒，眨眨眼' },
+    { k: 'rest', t: '🌙 作息', s: '子时入睡养肝血，熬夜一晚十日还。', m: '早点睡，比什么都补' },
+    { k: 'meal', t: '🍚 三餐', s: '早饭吃好午饭饱，晚饭少吃身体好。', m: '记得按时吃饭，别拿胃换工作' },
+    { k: 'posture', t: '🪑 坐姿', s: '坐如钟、立如松，腰不塌、颈不耸。', m: '腰靠背、脚踩地、屏幕与眼齐' },
+    { k: 'move', t: '🚶 走动', s: '饭后百步走，活到九十九。', m: '饭后走 10 分钟，血糖心情都好' },
+    { k: 'mood', t: '😊 心情', s: '笑一笑，十年少；愁一愁，白了头。', m: '深呼吸一下，笑一个' }
+  ];
+  var HEALTH_ON = true; try { HEALTH_ON = localStorage.getItem('sally_health_on') !== '0'; } catch (e) {}
+  function showHealth(kind) {
+    if (!HEALTH_ON) return;
+    var pool = kind ? HEALTH.filter(function (x) { return x.k === kind; }) : HEALTH;
+    if (!pool.length) pool = HEALTH;
+    var t = pool[Math.floor(Math.random() * pool.length)];
+    if (document.body.classList.contains('collapsed')) {
+      // 收起态：窗口太小，只能用头顶气泡
+      var old = document.querySelector('.hbub'); if (old) old.remove();
+      var b = document.createElement('div'); b.className = 'hbub';
+      b.innerHTML = '<b>' + t.t + '</b>' + t.m;
+      document.body.appendChild(b);
+      var timer = setTimeout(function () { try { b.remove(); } catch (e) {} }, 14000);
+      b.onclick = function () { clearTimeout(timer); b.remove(); };
+    } else {
+      // 🔴 聊天态**不要再用浮层** —— 浮层是 position:fixed，字一长就把聊天内容盖住（她反馈"长字时盖字"）
+      //    改成作为一条消息插进对话流，永远不挡字
+      try {
+        var el = add('a', '');
+        el.classList.remove('typing');
+        el.innerHTML = '<div style="background:linear-gradient(135deg,rgba(46,124,94,.22),rgba(28,88,68,.22));' +
+          'border:1px solid rgba(120,230,180,.35);border-radius:11px;padding:9px 11px">' +
+          '<div style="font-weight:700;color:#9ff0c8;margin-bottom:4px">🌿 ' + t.t + '</div>' +
+          '<div style="font-size:12.5px;line-height:1.7">' + t.s + '</div>' +
+          '<div style="font-size:12px;color:#bff5dc;margin-top:5px">→ ' + t.m + '</div></div>';
+      } catch (e) {}
+    }
+    // 顺手让 sally 也动一下
+    try { hero.style.transition = 'transform .3s'; hero.style.transform = 'scale(1.06)'; setTimeout(function () { hero.style.transform = ''; }, 320); } catch (e) {}
+  }
+  window.sallyHealth = showHealth;
+  window.sallyHealthToggle = function (on) {
+    HEALTH_ON = (on !== false);
+    try { localStorage.setItem('sally_health_on', HEALTH_ON ? '1' : '0'); } catch (e) {}
+    return HEALTH_ON;
+  };
+  // 每 45 分钟提醒一次；启动 3 分钟后先来一条（让人知道有这个功能）
+  setTimeout(function () { showHealth(); }, 3 * 60 * 1000);
+  setInterval(function () { showHealth(); }, 45 * 60 * 1000);
+  // 喝水/活动交替：每 25 分钟在两者间轮换（更贴近"该喝水了/该动动了"）
+  var hAlt = 0;
+  setInterval(function () { hAlt = (hAlt + 1) % 2; showHealth(hAlt ? 'move' : 'water'); }, 25 * 60 * 1000);
+
+  window.toggleSkin = function () {
+    SKIN = SKIN === 'creature' ? 'girl' : 'creature';
+    try { localStorage.setItem('sally_skin_v1', SKIN); } catch (e) {}
+    document.body.classList.toggle('sally-skin-creature', SKIN === 'creature');
+    try {
+      var S = window.SallySprite || {};
+      var fn = (SKIN === 'creature') ? S.mascotCreature : S.mascot;
+      hero.innerHTML = '<div class="sp-portal"></div><div class="sp-char">' + (fn ? fn() : (SKIN === 'creature' ? '<div style="font-size:80px;text-align:center">🐣</div>' : '<div style="font-size:80px;text-align:center">🎐</div>')) + '</div>';
+      var sb = document.getElementById('skinBtn'); if (sb) sb.textContent = SKIN === 'creature' ? '🐣 小灵宠' : '👧 人物';
+      var sq = document.getElementById('skinQuick'); if (sq) { sq.textContent = SKIN === 'creature' ? '👧' : '🐣'; sq.title = SKIN === 'creature' ? '切回人物' : '换成小灵宠'; }
+    } catch (e) { sys('换肤失败：' + e.message); }
+  };
+  // 界面风格开关：简约工作（默认） ⇄ 夜曲。侧边栏「🎨 界面风格」点一下切换，选择记在本机。
+  window.toggleWorkTheme = function () {
+    var on = !document.body.classList.contains('work');
+    document.body.classList.toggle('work', on);
+    try { localStorage.setItem('sally_ui', on ? 'work' : 'nok'); } catch (e) {}
+    syncThemeLabel();
+    try { sys(on ? '已切到「简约工作」界面 —— 白底、细边框，适合看长文和表格' : '已切回「夜曲」界面 —— 深色底，晚上看着不刺眼'); } catch (e) {}
+  };
+  function syncThemeLabel () {
+    var el = document.querySelector('#side .sd-i[data-go="theme"]');
+    if (el) el.textContent = '🎨 界面风格：' + (document.body.classList.contains('work') ? '简约工作' : '夜曲');
+  }
+  syncThemeLabel();
+
+  // 收起态的常驻小按钮（否则皮肤/展开按钮都被藏在 header 里点不到）
+  (function () {
+    var sq = document.getElementById('skinQuick');
+    if (sq) sq.onclick = function (e) { e.stopPropagation(); window.toggleSkin(); };
+    var dq = document.getElementById('dressQuick');
+    if (dq) dq.onclick = function (e) { e.stopPropagation(); nextOutfit(); };
+    // ---- 收起态"说话气泡"（聊天区看不见时用它）----
+    var _bubT = null, _bubMore = null;
+    function petSay(txt, ms, more) {
+      try {
+        var b = document.getElementById('petBub'); if (!b) return;
+        _bubMore = more || null;
+        b.innerHTML = '';
+        b.appendChild(document.createTextNode(txt));
+        if (more) {
+          var s = document.createElement('span'); s.className = 'more'; s.textContent = '▸ 点我细说';
+          b.appendChild(s);
+        }
+        b.classList.toggle('canTap', !!more);
+        document.body.classList.add('speaking');
+        if (_bubT) clearTimeout(_bubT);
+        _bubT = setTimeout(function () {
+          document.body.classList.remove('speaking');
+          b.classList.remove('canTap'); _bubMore = null;
+        }, ms || 3600);
+      } catch (e) {}
+    }
+    window.petSay = petSay;
+    // ===== 情境画面引擎 =====
+    // 点互动 → 灵宠"进入"那个场景：背景 + 飘动道具 + 姿态 + 字幕。
+    // 🔴 每个场景都有多个 variant，每次点随机取一个 —— 同事不会看到一成不变的画面。
+    // 可选从部署方配置的场景包地址覆盖默认内容。
+    //    以后加新场景/新花样只要改那个 JSON，**不用更新宠物**，满足"要一直更新"。
+    var SCENES = {
+      work:  { label:'上班', variants:[
+        { cap:'搬砖中…',        c1:'#2b3f6e', c2:'#16203c', props:['💻','☕','📊'], pose:'sit' },
+        { cap:'开会中，勿扰 🤫', c1:'#3a2f5e', c2:'#1d1733', props:['📋','🗣️','⏰'], pose:'lean' },
+        { cap:'摸鱼 3 分钟 😅',  c1:'#2f4a5e', c2:'#16242e', props:['🐟','💻','🍬'], pose:'sit' },
+        { cap:'赶方案，冲！',    c1:'#4a3a2e', c2:'#241a12', props:['📝','🔥','☕'], pose:'lean' } ]},
+      study: { label:'上学', variants:[
+        { cap:'上课中，认真听讲', c1:'#2e4a3a', c2:'#152418', props:['📚','✏️','💡'], pose:'sit' },
+        { cap:'背书背到走神…',   c1:'#3a4a2e', c2:'#1a2412', props:['📖','😵','🌙'], pose:'lean' },
+        { cap:'考完啦！🎉',      c1:'#4a2e3a', c2:'#241218', props:['🎓','🎉','✏️'], pose:'jump' } ]},
+      eat:   { label:'吃饭', variants:[
+        { cap:'干饭人干饭魂 🍚', c1:'#5e3a2e', c2:'#2a1812', props:['🍚','🥢','🍲'], pose:'sit' },
+        { cap:'下午茶时间 ☕',   c1:'#4a3a2e', c2:'#241a12', props:['☕','🍰','🍪'], pose:'sit' },
+        { cap:'夜宵警告 ⚠️',    c1:'#3a2e4a', c2:'#1a1224', props:['🍢','🍺','🌙'], pose:'lean' } ]},
+      sleep: { label:'睡觉', variants:[
+        { cap:'呼…呼… Zzz',   c1:'#1e2440', c2:'#0c1020', props:['🌙','⭐','💤'], pose:'sleep' },
+        { cap:'午休 20 分钟',  c1:'#2a2440', c2:'#141020', props:['🛏️','😴','☁️'], pose:'sleep' },
+        { cap:'做梦中…别吵',   c1:'#242a40', c2:'#101420', props:['💤','🐑','🌛'], pose:'sleep' } ]},
+      game:  { label:'玩游戏', variants:[
+        { cap:'组队中，缺 1 人！', c1:'#3a2e5e', c2:'#1a1230', props:['🎮','👥','⚔️'], pose:'sit' },
+        { cap:'这局稳了 😎',      c1:'#2e3a5e', c2:'#121a30', props:['🎮','🏆','🔥'], pose:'lean' },
+        { cap:'连跪三把… 😭',     c1:'#4a2e3a', c2:'#241218', props:['🎮','💔','📉'], pose:'sit' } ]},
+      sport: { label:'运动', variants:[
+        { cap:'跑起来！',        c1:'#2e5e4a', c2:'#122a20', props:['🏃','💦','👟'], pose:'run' },
+        { cap:'撸铁中 💪',      c1:'#4a3a2e', c2:'#241a12', props:['🏋️','💪','🔥'], pose:'lean' },
+        { cap:'拉伸放松一下',    c1:'#2e4a5e', c2:'#121a24', props:['🧘','🌿','💧'], pose:'sit' } ]},
+      trip:  { label:'旅游', variants:[
+        { cap:'出发！行李箱已就位', c1:'#2e5e5e', c2:'#122424', props:['🧳','✈️','📸'], pose:'lean' },
+        { cap:'打卡中 📸',         c1:'#5e4a2e', c2:'#2a2012', props:['📸','🗺️','😎'], pose:'jump' },
+        { cap:'风景太好啦～',      c1:'#2e4a6e', c2:'#121a2a', props:['🏔️','🌅','🎒'], pose:'lean' } ]},
+      shop:  { label:'逛街', variants:[
+        { cap:'买买买 🛍️',      c1:'#5e2e4a', c2:'#2a1220', props:['🛍️','💳','✨'], pose:'shop' },
+        { cap:'比价中，别急',    c1:'#3a2e4a', c2:'#1a1224', props:['🔍','💰','📱'], pose:'sit' },
+        { cap:'购物车满了…',     c1:'#4a2e5e', c2:'#201230', props:['🛒','😅','💸'], pose:'lean' } ]},
+      away:  { label:'看家', variants:[
+        { cap:'主人不在，我在看家 🏠', c1:'#20283c', c2:'#0c1018', props:['🏠','🔒','👀'], pose:'lean' } ]},
+      // 出场：双击图标启动时"元气登场"（像刚睡醒 / 旅游回来 / 运动回来…）
+      arrive: { label:'回来了', variants:[
+        { cap:'啊…睡醒了 ☀️',        c1:'#5e4a2e', c2:'#2a2012', props:['☀️','🥱','🛏️'], pose:'lean', ms:6200 },
+        { cap:'旅游回来啦！',          c1:'#2e5e5e', c2:'#122424', props:['🧳','✈️','😆'], pose:'jump', ms:6200 },
+        { cap:'运动完，一身汗 💦',     c1:'#2e5e4a', c2:'#122a20', props:['🏃','💦','😤'], pose:'run',  ms:6200 },
+        { cap:'下班回来啦～',          c1:'#2b3f6e', c2:'#16203c', props:['💼','🌆','😌'], pose:'lean', ms:6200 },
+        { cap:'刚吃完饭，好满足 🍚',   c1:'#5e3a2e', c2:'#2a1812', props:['🍚','😋','🥢'], pose:'sit',  ms:6200 },
+        { cap:'我回来啦！想我了没？',   c1:'#4a2e5e', c2:'#201230', props:['✨','👋','💖'], pose:'jump', ms:6200 } ]}
+    };
+    var SCENE_PACK_URL = OPEN_CONFIG.scenePackUrl || '';
+    var SCENE_POSES = ['sit','sleep','run','jump','lean','shop'];
+    function mergeScenePack(pack) {
+      try {
+        if (!pack || !pack.scenes) return;
+        Object.keys(pack.scenes).forEach(function (k) {
+          var s = pack.scenes[k];
+          if (s && s.variants && s.variants.length) SCENES[k] = s;   // 整段覆盖 → 服务端说了算
+        });
+      } catch (e) {}
+    }
+    var _sceneT = null;
+    function endScene() {
+      try {
+        document.body.classList.remove('scene');
+        var h = document.getElementById('hero');
+        if (h) SCENE_POSES.forEach(function (p) { h.classList.remove('pose-' + p); });
+      } catch (e) {}
+    }
+    function playScene(key, forceVariant) {
+      try {
+        var s = SCENES[key]; if (!s || !s.variants || !s.variants.length) return false;
+        var v = (forceVariant != null && s.variants[forceVariant]) ? s.variants[forceVariant]
+              : s.variants[Math.floor(Math.random() * s.variants.length)];
+        var box = document.getElementById('petScene'); if (!box) return false;
+        box.style.setProperty('--sc-c1', v.c1 || '#2b3f6e');
+        box.style.setProperty('--sc-c2', v.c2 || '#16203c');
+        var slots = [{ left: '5px', top: '11px' }, { right: '5px', top: '27px' }, { left: '7px', top: '60px' }, { right: '4px', top: '84px' }];
+        for (var i = slots.length - 1; i > 0; i--) { var j = Math.floor(Math.random() * (i + 1)); var t = slots[i]; slots[i] = slots[j]; slots[j] = t; }
+        var ph = '';
+        (v.props || []).slice(0, 4).forEach(function (p, i2) {
+          var sl = slots[i2] || slots[0];
+          ph += '<div class="sc-prop" style="left:' + (sl.left || 'auto') + ';right:' + (sl.right || 'auto') + ';top:' + sl.top + ';animation-delay:' + (i2 * 0.33).toFixed(2) + 's">' + p + '</div>';
+        });
+        box.innerHTML = '<div class="sc-bg"></div>' + ph + '<div class="sc-cap">' + (v.cap || s.label || '') + '</div>';
+        var h = document.getElementById('hero');
+        if (h) { SCENE_POSES.forEach(function (p) { h.classList.remove('pose-' + p); }); if (v.pose) h.classList.add('pose-' + v.pose); }
+        document.body.classList.add('scene');
+        if (_sceneT) clearTimeout(_sceneT);
+        _sceneT = setTimeout(endScene, v.ms || 9000);
+        return true;
+      } catch (e) { return false; }
+    }
+    // 换一个（同一个场景换个花样）—— 给"看腻了"的同事一个按钮
+    function rerollScene() {
+      try {
+        var keys = Object.keys(SCENES).filter(function (k) { return k !== 'away' && k !== 'arrive'; });
+        if (!keys.length) return;
+        playScene(keys[Math.floor(Math.random() * keys.length)]);
+      } catch (e) {}
+    }
+    window.playScene = playScene; window.rerollScene = rerollScene;
+    // 拉服务端场景包：这样"一直更新"不需要更新宠物本体
+    (function () {
+      function pull() {
+        if (!SCENE_PACK_URL) return;
+        fetch(SCENE_PACK_URL + (SCENE_PACK_URL.indexOf('?') >= 0 ? '&' : '?') + 't=' + Date.now())
+          .then(function (r) { return r.json(); })
+          .then(function (j) { mergeScenePack(j); })
+          .catch(function () {});
+      }
+      pull();
+      setInterval(pull, 2 * 60 * 60 * 1000);
+    })();
+    // ---- 生活场景互动：点一下有即时回应；带 more 的还能"点气泡细说"（展开聊天 + 自动提问，走大模型/联网拿真答案）----
+    var ACT = {
+      work:  { emo: '💼', quick: ['打工人模式启动！今天先干哪件？', '搬砖中…有事说事，我随时待命', '（敲键盘）先帮你把今天的活排个序？'],
+               more: '我今天要上班，帮我按优先级排一下今天最该先做的三件事，每件一句话说清怎么做。' },
+      study: { emo: '🎒', quick: ['上学去啦～ 今天想学点什么？', '（背起小书包）学习中心有 210 段教材，要我挑一节？', '上课不许走神哦～'],
+               more: '我想学点东西，帮我在学习中心里挑一节最值得先学的，告诉我为什么选它、大概多久能学完。' },
+      eat:   { emo: '🍚', quick: ['该吃饭啦～ 别饿着肚子干活', '（扒饭）你也去吃点什么吧！', '干饭人干饭魂 🍚'],
+               more: '帮我推荐今天午饭吃什么，我在南昌，要快、好吃、不贵，给三个选择并说清大概多少钱。' },
+      sleep: { emo: '😴', quick: ['呼…呼… 晚安，做个好梦 🌙', '（打个哈欠）早点睡，明天才有精神', '睡觉觉～ Zzz'],
+               more: '我最近睡不好，给我几个能立刻用上的助眠方法，要具体、可执行、别讲大道理。' },
+      game:  { emo: '🎮', quick: ['来一局？我可以帮你组队 🎮', '（掏出游戏机）想玩什么类型的？', '组队的话，我当辅助位！'],
+               more: '我想找点能和朋友一起玩、还能组队的游戏，推荐 3 个并说清：几个人能玩、一局大概多久、要花多少钱（含免费选项）。' },
+      sport: { emo: '🏃', quick: ['动起来！久坐对身体不好哦', '（原地蹦跶）要不要一起？', '运动 20 分钟，脑子会清醒很多～'],
+               more: '我想开始规律运动，给我一个适合上班族、每天 20 分钟以内的方案：每周怎么安排、需要什么装备、注意什么。' },
+      trip:  { emo: '✈️', quick: ['想出去玩？点我一下，我给你挑地方 + 算路费', '（收拾行李）去哪玩好呢～', '周末想不想出去走走？'],
+               more: '推荐一个适合周末去的景点（我在南昌出发），告诉我：景点亮点、怎么去（高铁/自驾大概多久）、门票和人均花费大概多少钱。' },
+      shop:  { emo: '🛒', quick: ['逛街去～ 要买什么我帮你比价', '（推着购物车）有没有想买的？', '剁手前先问我一句，能省不少'],
+               more: '我想网购点东西，帮我列一下下单前该怎么比价和避坑，给几条实用要点。' }
+    };
+    // 主人不在时，全换成"看家"话术
+    var AWAY_REACT = {
+      work: '主人上班去啦～ 工作的事等她回来再谈哦 💼',
+      study: '主人去学习啦，我在家看门 📚',
+      eat: '主人去吃饭啦～ 我不给陌生人开门的 🍚',
+      sleep: '（小声）嘘… 主人在睡觉，我在看家 🏠',
+      game: '主人不在哦～ 想组队得等主人回来 🎮',
+      sport: '主人去运动啦，家里我守着 🏃',
+      trip: '主人出去玩啦～ 没经过同意，不能进我家门 🚪',
+      shop: '主人去逛街啦，我不能收陌生人的东西哦 🛒'
+    };
+    (function () {
+      var box = document.getElementById('petActions');
+      if (!box) return;
+      box.addEventListener('mousedown', function (e) { e.stopPropagation(); });   // 别触发窗口拖动
+      box.addEventListener('click', function (e) {
+        var t = e.target; if (!t || !t.dataset || !t.dataset.act) return;
+        e.stopPropagation();
+        var k = t.dataset.act;
+        if (k === 'dice') { rerollScene(); return; }          // 🎲 随机换一个场景
+        var a = ACT[k]; if (!a) return;
+        if (window.__absentNow && window.__absentNow()) {
+          playScene('away'); if (_sceneT) { clearTimeout(_sceneT); _sceneT = null; }
+          petSay('🚪 ' + window.__absentLine(AWAY_REACT[k]), 5000);
+          return;
+        }
+        playScene(k);                                          // 🔴 先"进入那个场景"：背景 + 道具 + 姿态
+        petSay(a.emo + ' ' + a.quick[Math.floor(Math.random() * a.quick.length)], a.more ? 7000 : 3400, a.more);
+      });
+    })();
+    // 点气泡 → 展开聊天并自动把"细说"的问题发出去（拿真正有用的答案）
+    (function () {
+      var b = document.getElementById('petBub');
+      if (!b) return;
+      b.addEventListener('mousedown', function (e) { e.stopPropagation(); });
+      b.addEventListener('click', function (e) {
+        e.stopPropagation();
+        if (!_bubMore) return;
+        var q = _bubMore; _bubMore = null;
+        try { document.body.classList.remove('speaking'); } catch (x) {}
+        try { if (window.toggleCollapse) window.toggleCollapse(); } catch (x) {}
+        setTimeout(function () { try { send(q); } catch (x) {} }, 320);
+      });
+    })();
+    // ---- 动漫式走路 / 站立呼吸（主进程漫游时点亮 walking）----
+    window.__sallyWalk = function (on) {
+      try {
+        var h = document.getElementById('hero'); if (!h) return;
+        h.classList.toggle('walking', !!on);
+        h.classList.toggle('idle', !on);
+      } catch (e) {}
+    };
+    try { var _h0 = document.getElementById('hero'); if (_h0) _h0.classList.add('idle'); } catch (e) {}
+    // ---- 主人不在的状态：① 系统空闲/锁屏（主进程推）② 飞书审批（请假/出差/外出/例会）----
+    window.__sallyAway = false;      // 空闲/锁屏
+    window.__sallyBoss = null;       // 飞书审批算出来的状态
+    var _absentOn = false, _lastBossStatus = '';
+    function bossAbsent() {
+      var b = window.__sallyBoss;
+      return !!(b && b.ok && b.status && b.status !== 'in');
+    }
+    function absentNow() { return !!(window.__sallyAway || bossAbsent()); }
+    // 主人不在时该说的话：优先用她真实的审批状态（请假/出差/会议），否则用通用看家话术
+    function absentLine(fallback) {
+      if (bossAbsent() && window.__sallyBoss.text) return window.__sallyBoss.text;
+      return fallback || '主人不在哦～ 没经过同意，不能进我家门 🚪';
+    }
+    window.__absentNow = absentNow;
+    window.__absentLine = absentLine;
+    function syncAbsent() {
+      var on = absentNow();
+      try {
+        document.body.classList.toggle('away', on);
+        if (on) {
+          var b = window.__sallyBoss, lbl = '💤 主人外出中';
+          if (b && b.ok && b.status === 'meeting') lbl = '📅 主人会议中';
+          else if (b && b.ok && b.status === 'trip') lbl = '✈️ 主人出差中';
+          else if (b && b.ok && b.status === 'leave') lbl = '🌴 主人休假中';
+          else if (b && b.ok && b.status === 'out') lbl = '🚶 主人外出中';
+          var tag = document.getElementById('awayTag'); if (tag) tag.textContent = lbl;
+          if (!_absentOn) { playScene('away'); if (_sceneT) { clearTimeout(_sceneT); _sceneT = null; } }
+        } else if (_absentOn) {
+          endScene();
+        }
+      } catch (e) {}
+      _absentOn = on;
+    }
+    window.__sallyAwaySet = function (v) {
+      var on = !!v;
+      if (on === window.__sallyAway) return;
+      window.__sallyAway = on;
+      syncAbsent();
+      if (on && !bossAbsent()) petSay('💤 主人出去啦～ 我在这儿看家 🏠', 4200);
+    };
+    window.__sallyBossSet = function (st) {
+      var prev = _lastBossStatus;
+      window.__sallyBoss = st || null;
+      var cur = (st && st.ok && st.status) ? st.status : 'unknown';
+      _lastBossStatus = cur;
+      syncAbsent();
+      if (cur !== prev && bossAbsent() && st && st.text) petSay('💤 ' + st.text, 6200);
+    };
+    // 拉飞书审批状态（启动后 3 秒 + 每 10 分钟一次）
+    (function () {
+      var P = window.sallyPet;
+      if (!P || !P.bossStatus) return;
+      function pull(force) {
+        P.bossStatus({ force: !!force }).then(function (r) { window.__sallyBossSet(r); }).catch(function () {});
+      }
+      setTimeout(function () { pull(false); }, 3000);
+      setInterval(function () { pull(true); }, 10 * 60 * 1000);
+    })();
+    // ===== 同事请假/出差/外出 广播 =====
+    // 数据来自部署方配置的通知接口。
+    var NOTICES = [];
+    function leaveEmo(n) { return n.kind === 'trip' ? '✈️' : (n.kind === 'out' ? '🚶' : '🌴'); }
+    function activeNotices() { return NOTICES.filter(function (n) { return n.active; }); }
+    // 在聊天区渲染卡片：谁 / 什么原因 / 几天 / 多久回来 / 电话 / 留言 / 催办
+    function leaveCard() {
+      try {
+        var act = activeNotices();
+        var soon = NOTICES.filter(function (n) { return !n.active; });
+        var list = act.concat(soon);
+        if (!list.length) { sys('现在大家都在岗，没人请假 🎉'); return; }
+        list.forEach(function (n) {
+          var t = add('a', ''); t.classList.remove('typing');
+          var head = leaveEmo(n) + ' <b>' + n.name + '</b>' + (n.sub ? (' · ' + n.sub) : '') + (n.span ? (' · ' + n.span) : '');
+          var lines = [];
+          if (n.reason) lines.push('📝 事由：' + n.reason);
+          if (n.dest) lines.push('📍 目的地：' + n.dest);
+          lines.push('🕐 ' + n.start + ' ~ ' + n.end);
+          lines.push(n.active ? ('👉 ' + n.back) : ('⏳ ' + n.start + ' 开始'));
+          var h = '<div style="font-weight:600;margin-bottom:5px">' + head + '</div>';
+          h += '<div style="color:var(--dim);font-size:12px;line-height:1.75">' + lines.join('<br>') + '</div>';
+          if (n.phone) h += '<div style="margin-top:6px;font-size:13px">📞 <a href="tel:' + n.phone + '" style="color:#8fb6ff;text-decoration:none">' + n.phone + '</a></div>';
+          t.innerHTML = h;
+          var row = document.createElement('div');
+          row.style.cssText = 'display:flex;gap:6px;margin-top:9px;flex-wrap:wrap';
+          if (n.phone) {
+            var b1 = document.createElement('button'); b1.className = 'btn'; b1.textContent = '📞 打电话';
+            b1.onclick = function () { try { var P = window.sallyPet; if (P && P.dial) P.dial({ number: n.phone }).then(function (r) { sys(r && r.ok ? ('📞 ' + r.msg) : ('⚠️ ' + ((r && r.msg) || '拨号失败'))); }); else location.href = 'tel:' + n.phone; } catch (e) {} };
+            row.appendChild(b1);
+          }
+          var b2 = document.createElement('button'); b2.className = 'btn p'; b2.textContent = '💬 留言';
+          b2.onclick = function () { leaveMsg(n, false); }; row.appendChild(b2);
+          var b3 = document.createElement('button'); b3.className = 'btn'; b3.textContent = '🔥 催一下';
+          b3.style.cssText = 'background:linear-gradient(135deg,#ff8a5c,#e5482e);color:#fff;border:none';
+          b3.onclick = function () { leaveMsg(n, true); }; row.appendChild(b3);
+          t.appendChild(row);
+        });
+      } catch (e) { sys('卡片渲染失败：' + e.message); }
+    }
+    // 留言 / 加急催办 —— 都是「她本人」的名义发飞书，发前会让她确认内容
+    function leaveMsg(n, urgent) {
+      var P = window.sallyPet;
+      if (!P || !P.larkSend) { sys('⚠️ 发飞书要用桌面宠物（网页版没有权限）'); return; }
+      var def = urgent
+        ? ('【加急】' + n.name + '，这件事比较急，麻烦休假期间也帮忙看下哦～ 就靠你了！🙏')
+        : ('@' + n.name + ' 有件事想请你帮忙，方便的时候回我一下～');
+      var txt = window.prompt(urgent ? ('给「' + n.name + '」发加急消息（可改内容）：') : ('给「' + n.name + '」留言（可改内容）：'), def);
+      if (!txt) return;
+      sys('📤 正在发给「' + n.name + '」…');
+      P.larkSend({ to: n.name, text: txt }).then(function (r) {
+        sys(r && r.ok ? ('✅ 已发给「' + (r.name || n.name) + '」：' + txt) : ('⚠️ 发送失败：' + ((r && r.error) || '未知')));
+      }).catch(function (e) { sys('⚠️ ' + e.message); });
+    }
+    window.__leaveCard = leaveCard;
+    // ---- 二次元通知：徽标数字 → 点开像书卷一样展开 ----
+    function notifyCount() {
+      try {
+        return activeNotices().length + ((window.__appr || []).filter(function (x) { return x.pending; }).length);
+      } catch (e) { return 0; }
+    }
+    function renderNotifyBadge() {
+      try {
+        var q = document.getElementById('openQuick'), n = document.getElementById('notifyNum');
+        if (!q || !n) return;
+        var c = notifyCount();
+        if (c > 0) { n.textContent = c > 99 ? '99+' : String(c); q.classList.add('hasNew'); }
+        else { q.classList.remove('hasNew'); }
+      } catch (e) {}
+    }
+    function showNotifyPanel() {
+      try {
+        var p = document.getElementById('notifyPanel'), list = document.getElementById('npList');
+        if (!p || !list) return;
+        var h = '';
+        activeNotices().forEach(function (n) {
+          h += '<div class="np-item">' +
+            '<div class="who">' + leaveEmo(n) + ' ' + n.name + ' · ' + (n.sub || '不在岗') + (n.span ? (' · ' + n.span) : '') + '</div>' +
+            '<div class="meta">' + (n.reason ? ('📝 ' + n.reason + '<br>') : '') +
+            '🕐 ' + n.start + ' ~ ' + n.end + '<br>👉 ' + n.back +
+            (n.phone ? ('<br>📞 <a class="tel" href="tel:' + n.phone + '">' + n.phone + '</a>') : '') +
+            '</div></div>';
+        });
+        (window.__appr || []).slice(0, 12).forEach(function (a) {
+          h += '<div class="np-item' + (a.pending ? ' pending' : '') + '">' +
+            '<div class="who">📝 ' + a.name + ' · ' + a.title + '</div>' +
+            '<div class="meta">' + a.status + ' ｜ ' + a.at + '</div></div>';
+        });
+        if (!h) h = '<div class="np-item"><div class="meta">现在没有新动态，大家都好好的～ ✨</div></div>';
+        if (!window.__isVip) h += '<div class="np-foot">🔒 事由 / 电话 / 审批动态仅本人与管理层可见</div>';
+        list.innerHTML = h;
+        p.classList.remove('on'); void p.offsetWidth; p.classList.add('on');   // 重放书卷展开动画
+      } catch (e) {}
+    }
+    window.__showNotify = showNotifyPanel;
+    window.__renderNotifyBadge = renderNotifyBadge;
+    // 点空白处收起
+    document.addEventListener('click', function (e) {
+      try {
+        var p = document.getElementById('notifyPanel');
+        if (!p || !p.classList.contains('on')) return;
+        if (p.contains(e.target)) return;
+        p.classList.remove('on');
+      } catch (x) {}
+    });
+    // 开源版不预置任何收件人、群或平台用户 ID。部署方可在自己的配置层注入。
+    var PUSH_TO = [];
+    var PUSH_FROM = [];
+    var GROUP_CHAT = '';
+    function iAmPusher() {
+      try {
+        var me = JSON.parse(localStorage.getItem('sally_me') || 'null');
+        return !!(me && me.openId && PUSH_FROM.indexOf(me.openId) >= 0);
+      } catch (e) { return false; }
+    }
+    function pushedSet() { try { return JSON.parse(localStorage.getItem('sally_pushed') || '[]'); } catch (e) { return []; } }
+    function markPushed(codes) { try { localStorage.setItem('sally_pushed', JSON.stringify(codes.slice(-300))); } catch (e) {} }
+    function noticeText(n, sanitize) {
+      // 全量版可包含事由和电话，只应发送给部署方明确授权的收件人。
+      return '🌴 同事休假动态（小仁同学 自动播报）\n\n' +
+        n.name + ' · ' + (n.sub || '不在岗') + (n.span ? (' · ' + n.span) : '') + '\n' +
+        (sanitize ? '' : (n.reason ? ('事由：' + n.reason + '\n') : '')) +
+        '时间：' + n.start + ' ~ ' + n.end + '\n' +
+        '回来：' + n.back +
+        (sanitize ? '' : ((n.dest ? ('\n目的地：' + n.dest) : '') + (n.phone ? ('\n电话：' + n.phone) : ''))) +
+        '\n（本条由 小仁同学 自动推送）';
+    }
+    // 发群用的"轻松版"，且**不含事由/电话**（群里是全体同事，尊重当事人隐私）
+    function groupText(n) {
+      return '🌴 小伙伴休假播报\n\n' +
+        n.name + ' · ' + (n.sub || '不在岗') + (n.span ? (' · ' + n.span) : '') + '\n' +
+        '📅 ' + n.start + ' ~ ' + n.end + '\n' +
+        '👉 ' + n.back + '\n\n' +
+        '有急事找 TA？跟我说一声，我帮你留言转达～\n—— 你们的 小仁同学';
+    }
+    function autoPushNotices(list) {
+      try {
+        var P = window.sallyPet;
+        if (!P || !P.larkSend) return;
+        if (!iAmPusher()) return;
+        var done = pushedSet();
+        var fresh = list.filter(function (n) { return n.active && done.indexOf(n.code) < 0; });
+        if (!fresh.length) return;
+        fresh.forEach(function (n, i) {
+          var txt = noticeText(n);
+          setTimeout(function () {
+            // GROUP_CHAT 留空时不启用群播报。
+            if (GROUP_CHAT) {
+              P.larkSend({ chatId: GROUP_CHAT, text: groupText(n) }).then(function (r) {
+                if (r && r.ok) sys('📢 已在群播报「' + n.name + ' ' + (n.sub || '休假') + '」');
+              }).catch(function () {});
+            }
+            PUSH_TO.forEach(function (t) {
+              P.larkSend({ to: t.name, text: txt }).then(function (r) {
+                if (r && r.ok) {
+                  if (done.indexOf(n.code) < 0) done.push(n.code);
+                  markPushed(done);
+                  sys('📤 已把「' + n.name + ' ' + (n.sub || '休假') + '」推给 ' + t.name);
+                } else {
+                  sys('⚠️ 推给 ' + t.name + ' 失败：' + ((r && r.error) || '未知'));
+                }
+              }).catch(function (e) { sys('⚠️ 推送失败：' + e.message); });
+            });
+          }, 1500 + i * 2000);
+        });
+      } catch (e) {}
+    }
+    // 🔴 休假只走「本地端精灵」这一条通道 → 新休假一出现就**立刻**播报，不等 18 分钟周期
+    function announceNew(list) {
+      try {
+        if (absentNow()) return;
+        var seen = [];
+        try { seen = JSON.parse(localStorage.getItem('sally_seen') || '[]'); } catch (e) {}
+        var fresh = list.filter(function (n) { return n.active && seen.indexOf(n.code) < 0; });
+        if (!fresh.length) return;
+        fresh.forEach(function (n) { if (seen.indexOf(n.code) < 0) seen.push(n.code); });
+        try { localStorage.setItem('sally_seen', JSON.stringify(seen.slice(-300))); } catch (e) {}
+        var n = fresh[0];
+        var s = leaveEmo(n) + ' ' + n.name + ' ' + (n.sub || '不在岗') + (n.span ? ('（' + n.span + '）') : '') +
+                '，' + n.back + '～' +
+                (n.reason ? (' 事由：' + n.reason.slice(0, 16) + '。') : '') +
+                (n.phone ? (' 有急事可以打 ' + n.phone) : ' 有急事跟我说，我帮你留言转达');
+        petSay(s, 8500);
+        // 聊天态顺手把卡片推出来
+        setTimeout(function () {
+          try { if (!document.body.classList.contains('collapsed') && activeNotices().length) leaveCard(); } catch (e) {}
+        }, 900);
+      } catch (e) {}
+    }
+    // 定时把"谁在休假"轻轻播报一下（不打扰，但同事一定看得到）
+    var _leaveIdx = 0;
+    function announceLeave() {
+      try {
+        if (absentNow()) return;
+        var act = activeNotices();
+        if (!act.length) return;
+        var n = act[_leaveIdx++ % act.length];
+        // 公开版（非 VIP）没有事由/电话 → 文案要能自然缺省，不能出现"打 她电话"这种半截话
+        var s = leaveEmo(n) + ' ' + n.name + ' ' + (n.sub || '不在岗') + (n.span ? ('（' + n.span + '）') : '') +
+                '，' + n.back + '～' +
+                (n.reason ? (' 事由：' + n.reason.slice(0, 16) + '。') : '') +
+                (n.phone ? (' 有急事可以打 ' + n.phone) : ' 有急事跟我说，我帮你留言转达');
+        petSay(s, 7000);
+      } catch (e) {}
+    }
+    // ---- 启动时确认"我是谁"：没绑定就引导扫码（扫了哪个平台就记哪个身份）----
+    (function () {
+      var P = window.sallyPet;
+      if (!P || !P.whoami) return;
+      setTimeout(function () {
+        P.whoami().then(function (r) {
+          if (r && r.ok && r.name) {
+            try { localStorage.setItem('sally_me', JSON.stringify({ name: r.name, openId: r.openId || '', platform: r.platform || 'feishu' })); } catch (e) {}
+            window.__sallyMe = r;
+            var k = ROLE_KNOWLEDGE[r.name];
+            if (k) {
+              var label = k.roleName || '小仁同学';
+              var titleEl = document.querySelector('.heroName'); if (titleEl) titleEl.textContent = label;
+              var nameEl = document.getElementById('sallyName'); if (nameEl) nameEl.textContent = label + ' 🎐';
+              var sloganEl = document.getElementById('slogan'); if (sloganEl) sloganEl.innerHTML = '<span style="color:#ffd88a;font-weight:600">' + k.title + '：</span>' + k.hint;
+              setTimeout(function() { petSay('💼 ' + r.name + '您好！「' + k.title + '」专属技能包已为您加载，已就地为您开启工作伴随守望。', 7000); }, 3000);
+            }
+            if (window.pullPendingApprovals) window.pullPendingApprovals();
+            return;
+          }
+          // 没绑定 → 引导扫码（一天最多提醒一次，别烦人）
+          var last = 0; try { last = parseInt(localStorage.getItem('sally_bind_nag') || '0', 10) || 0; } catch (e) {}
+          if (Date.now() - last < 86400000) return;
+          try { localStorage.setItem('sally_bind_nag', String(Date.now())); } catch (e) {}
+          if (absentNow()) return;
+          petSay('👋 先扫码登录一下呗～ 我好知道你是谁（飞书 / 钉钉 / 企微都能扫）', 6500);
+          setTimeout(function () {
+            try {
+              var u = OPEN_CONFIG.bindUrl || '';
+              if(!u){ sys('平台绑定地址未配置'); return; }
+              if (P.openUrl) P.openUrl({ url: u }); else window.open(u, '_blank', 'noopener');
+            } catch (e) {}
+          }, 2200);
+        }).catch(function () {});
+      }, 2600);
+    })();
+    (function () {
+      function pull() {
+        var noticesUrl = OPEN_CONFIG.noticesUrl || './notices.json';
+        fetch(noticesUrl + (noticesUrl.indexOf('?') >= 0 ? '&' : '?') + 't=' + Date.now())
+          .then(function (r) { return r.json(); })
+          .then(function (j) {
+            if (j && j.notices) {
+              NOTICES = j.notices;              // 公开版：只有"谁在休假"（已脱敏，无原因/电话）
+              window.__appr = [];
+              renderNotifyBadge();
+              announceNew(NOTICES);              // 新休假 → 本地精灵立刻播报
+              if (activeNotices().length) setTimeout(announceLeave, 2500);
+            }
+            // 服务端必须自行鉴权，只有授权用户才能读取全量通知。
+            var me = null;
+            try { me = JSON.parse(localStorage.getItem('sally_me') || 'null'); } catch (e) {}
+            if (me && me.openId) {
+              fetch(API + '/notices-full?as=' + encodeURIComponent(me.openId) + '&t=' + Date.now())
+                .then(function (r) { return r.ok ? r.json() : null; })
+                .then(function (f) {
+                  if (!f || !f.notices) return;
+                  NOTICES = f.notices;          // 全量覆盖
+                  window.__appr = f.approvals || [];
+                  window.__isVip = true;
+                  renderNotifyBadge();
+                  announceNew(NOTICES);         // VIP 用全量文案（含事由/电话）再播一次
+                  autoPushNotices(NOTICES);
+                }).catch(function () {});
+            }
+          }).catch(function () {});
+      }
+      setTimeout(pull, 4000);
+      setInterval(pull, 10 * 60 * 1000);
+      setInterval(announceLeave, 18 * 60 * 1000);
+    })();
+    // ---- 悦耳的网页音频合成提示音 (Web Audio API 纯合成，无网络开销、100%可靠) ----
+    window.playCuteSound = function (name) {
+      var preset = name || localStorage.getItem('sally_sound_preset') || 'chime';
+      if (preset === 'mute') return;
+      try {
+        var ctx = new (window.AudioContext || window.webkitAudioContext)();
+        if (!ctx) return;
+        if (preset === 'soft') {
+          // Q弹萌系泡泡声
+          var osc = ctx.createOscillator(), gain = ctx.createGain();
+          osc.type = 'sine'; osc.frequency.setValueAtTime(160, ctx.currentTime);
+          osc.frequency.exponentialRampToValueAtTime(750, ctx.currentTime + 0.12);
+          gain.gain.setValueAtTime(0.18, ctx.currentTime);
+          gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.14);
+          osc.connect(gain); gain.connect(ctx.destination);
+          osc.start(); osc.stop(ctx.currentTime + 0.15);
+        } else if (preset === 'chime') {
+          // 动漫神清气爽治愈风
+          [440, 554.37, 659.25, 880].forEach(function(f, idx) {
+            var osc = ctx.createOscillator(), gain = ctx.createGain();
+            osc.type = 'triangle'; osc.frequency.setValueAtTime(f, ctx.currentTime + idx * 0.05);
+            gain.gain.setValueAtTime(0.08, ctx.currentTime + idx * 0.05);
+            gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + idx * 0.05 + 0.35);
+            osc.connect(gain); gain.connect(ctx.destination);
+            osc.start(ctx.currentTime + idx * 0.05); osc.stop(ctx.currentTime + idx * 0.05 + 0.4);
+          });
+        } else if (preset === 'bleep') {
+          // 复古FC红白机小鼓点
+          [350, 700].forEach(function(f, idx) {
+            var osc = ctx.createOscillator(), gain = ctx.createGain();
+            osc.type = 'square'; osc.frequency.setValueAtTime(f, ctx.currentTime + idx * 0.07);
+            gain.gain.setValueAtTime(0.06, ctx.currentTime + idx * 0.07);
+            gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + idx * 0.07 + 0.14);
+            osc.connect(gain); gain.connect(ctx.destination);
+            osc.start(ctx.currentTime + idx * 0.07); osc.stop(ctx.currentTime + idx * 0.07 + 0.16);
+          });
+        }
+      } catch (e) {}
+    };
+
+    // ---- 待办审批静默轮询 ----
+    window.pullPendingApprovals = function() {
+      var P = window.sallyPet;
+      if (!P || !P.pendingApprovals) return;
+      P.pendingApprovals().then(function (r) {
+        if (r && r.ok && r.count > 0) {
+          window.__pendingApprovalsCount = r.count;
+          window.__pendingApprovalsList = r.tasks || [];
+          if (window.petSay) window.petSay('📝 飞书里还有 ' + r.count + ' 项审批待办等候处理哦～', 7500);
+          window.playCuteSound('chime');
+          renderNotifyBadge();
+        } else {
+          window.__pendingApprovalsCount = 0;
+          window.__pendingApprovalsList = [];
+          renderNotifyBadge();
+        }
+      }).catch(function () {});
+    };
+    setTimeout(window.pullPendingApprovals, 5000);
+    setInterval(window.pullPendingApprovals, 5 * 60 * 1000);
+
+    // 出场：主进程让它"从屏幕外走进来"，走到位后调这里 → 元气登场打招呼
+    (function () {
+      var LINES = ['我回来啦！今天想让我帮你干点啥？', '来啦来啦～ 今天也一起加油！', '叮咚～ sally 到家了 🎐', '我满血复活啦，有什么要办的？'];
+      window.__sallyArrive = function () {
+        try {
+          if (absentNow()) return;   // 主人本来就不在，别嗨
+          playScene('arrive');
+          setTimeout(function () { petSay(LINES[Math.floor(Math.random() * LINES.length)], 4200); }, 600);
+        } catch (e) {}
+      };
+      // 兜底：万一主进程没调（网页版 / 主进程异常），6.5 秒后自己登场
+      setTimeout(function () { if (!document.body.classList.contains('scene')) { try { window.__sallyArrive(); } catch (e) {} } }, 6500);
+    })();
+    var oq = document.getElementById('openQuick');
+    if (oq) oq.onclick = function (e) {
+      e.stopPropagation();
+      window.toggleCollapse();
+      // 展开后把"书卷"放出来（徽标点开的正题）
+      setTimeout(function () { try { if (!document.body.classList.contains('collapsed')) showNotifyPanel(); } catch (x) {} }, 380);
+    };
+    var hq = document.getElementById('hideQuick');
+    if (hq) hq.onclick = function (e) {
+      e.stopPropagation();
+      if (window.sallyPet && window.sallyPet.hide) window.sallyPet.hide();
+      else sys('「隐藏」只有桌面宠物能做；网页版请直接关标签页～');
+    };
+    // 拖动：优先走 IPC（稳），网页版回落到 CSS drag
+    // 🔴 收起态改成「整只都能拖」——鼠标放在 sally 任意部位按住就能挪；
+    //    并且区分「拖」和「点」：没挪动（<6px）就交给点击逻辑（展开聊天）。
+    (function () {
+      function inQuick(el) {
+        var t = el;
+        while (t && t !== document.body) {
+          if (t.id && /Quick$/.test(t.id)) return true;          // 四个小圆钮
+          if (t.id === 'petActions') return true;                // 互动图标条
+          t = t.parentNode;
+        }
+        return false;
+      }
+      document.addEventListener('mousedown', function (e) {
+        if (e.button !== 0) return;
+        if (!document.body.classList.contains('collapsed')) return;
+        if (!(window.sallyPet && window.sallyPet.dragBegin)) return;
+        if (inQuick(e.target)) return;
+        var moved = false, sx = e.screenX, sy = e.screenY;
+        e.preventDefault();
+        window.sallyPet.dragBegin();
+        var mv = function (ev) {
+          if (Math.abs(ev.screenX - sx) > 5 || Math.abs(ev.screenY - sy) > 5) moved = true;
+          window.sallyPet.dragMove();
+        };
+        var up = function () {
+          window.sallyPet.dragEnd();
+          document.removeEventListener('mousemove', mv);
+          document.removeEventListener('mouseup', up);
+          // 拖过了 → 记一下，避免松手时被当成"点击"把聊天窗弹出来
+          if (moved) window.__sallyDragMoved = Date.now();
+        };
+        document.addEventListener('mousemove', mv);
+        document.addEventListener('mouseup', up);
+      });
+    })();
+    // 角色条：滚轮横滑（笔记本触控板/鼠标都顺手）
+    var rb = document.getElementById('roles');
+    if (rb) rb.addEventListener('wheel', function (e) {
+      var d = Math.abs(e.deltaY) > Math.abs(e.deltaX) ? e.deltaY : e.deltaX;
+      if (d) { rb.scrollLeft += d; e.preventDefault(); }
+    }, { passive: false });
+  })();
+  var SLOGAN = (window.SallySprite && window.SallySprite.SLOGAN) || '我不需要阿拉丁神灯，我想成为那盏万能的灯，请把你的愿望告诉我试试吧！';
+
+  // ---- 配置 ----
+  function cfg(){ try{ return Object.assign({mode:'cloud',ollama:'http://127.0.0.1:11434/v1',model:'qwen2.5:3b'}, JSON.parse(localStorage.getItem(CFG_KEY))||{}); }catch(e){ return {mode:'cloud',ollama:'http://127.0.0.1:11434/v1',model:'qwen2.5:3b'}; } }
+  function setCfg(c){ try{ localStorage.setItem(CFG_KEY, JSON.stringify(c)); }catch(e){} }
+  function openCfg(){ var c=cfg(); document.getElementById('cfgMode').value=c.mode; document.getElementById('cfgOllama').value=c.ollama; document.getElementById('cfgModel').value=c.model; document.getElementById('modal').classList.add('open'); }
+  function closeCfg(){ document.getElementById('modal').classList.remove('open'); }
+  function saveCfg(){ setCfg({mode:document.getElementById('cfgMode').value, ollama:document.getElementById('cfgOllama').value.trim(), model:document.getElementById('cfgModel').value.trim()}); closeCfg(); paintMode(); }
+  window.openCfg=openCfg; window.closeCfg=closeCfg; window.saveCfg=saveCfg;
+  // 主进程发现新版本时调这里 → 页面顶部显示横幅（比系统弹窗可靠）
+  window.__sallyUpdateBanner=function(ver){
+    try{
+      var b=document.getElementById('upBar'); if(!b) return;
+      document.getElementById('upVer').textContent='v'+ver;
+      b.classList.add('on');
+    }catch(e){}
+  };
+
+  // ================= 版本显示 / 一键检查更新 / 升级回执（2026-09-21） =================
+  // 全部跑在网页里 —— 所以改一次服务端，所有已装用户刷新就生效，不用卸载重装。
+  (function(){
+    var SP = window.sallyPet;
+    var VER_KEY = 'sally_shell_ver_seen';
+    function pill(txt, tip){
+      var b = document.getElementById('verBtn'); if(!b) return;
+      b.textContent = txt; if(tip) b.title = tip;
+    }
+    function boot(){
+      if(!SP || !SP.isPet || !SP.checkUpdate){
+        pill('网页版', '网页版没有本机升级能力；装桌面版可以一键升级。');
+        return;
+      }
+      SP.checkUpdate().then(function(r){
+        if(!r || !r.ok){ pill('v?', '读不到版本，稍后可点我重试'); return; }
+        var cur = String(r.current || '');
+        var seen = '';
+        try{ seen = localStorage.getItem(VER_KEY) || ''; }catch(e){}
+        pill('v'+cur, '当前 v'+cur + (r.latest ? ('，最新 v'+r.latest) : '') + '｜点我检查更新');
+        // 升级回执：这次启动的版本比上次记录的新 → 说明刚升级成功，明确告诉用户
+        if(seen && cur && seen !== cur){
+          sys('✅ 已更新到 v' + cur + '（上次是 v' + seen + '）。新增能力可以直接用了 🎐');
+        }
+        try{ localStorage.setItem(VER_KEY, cur); }catch(e){}
+        if(r.hasUpdate) window.__sallyUpdateBanner(r.latest);
+      }).catch(function(){ pill('v?', '检查更新失败，点我重试'); });
+    }
+    window.__sallyCheckUpdate = function(){
+      if(!SP || !SP.checkUpdate){ sys('网页版没有本机升级能力；装桌面版（RB小仁同学）可以一键升级。'); return; }
+      sys('正在检查更新…');
+      SP.checkUpdate().then(function(r){
+        if(!r || !r.ok){ sys('⚠️ 连不上更新服务器，稍后再点一次。'); return; }
+        if(r.hasUpdate){
+          sys('🎁 有新版本 v' + r.latest + '（当前 v' + r.current + '）' + (r.notes ? ('\n' + r.notes) : '')
+            + '\n点顶部横幅「立即升级」即可，不用卸载重装。');
+          window.__sallyUpdateBanner(r.latest);
+        } else {
+          sys('✅ 已经是最新版 v' + r.current + '。');
+        }
+      }).catch(function(e){ sys('⚠️ 检查更新失败：' + (e && e.message ? e.message : '未知原因')); });
+    };
+    // 点了升级之后，横幅立刻变成进度提示，避免"点完没反应"的错觉
+    window.__sallyApplyUpdate = function(){
+      if(!SP || !SP.applyUpdate){ sys('网页版没有本机升级能力。'); return; }
+      var b = document.getElementById('upBar');
+      if(b){ b.textContent = '⏳ 正在下载并重启，约 10 秒，请勿关闭窗口…'; b.classList.add('on'); }
+      try{ SP.applyUpdate(); }catch(e){ sys('⚠️ 升级启动失败：' + e.message); }
+    };
+    if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot); else boot();
+  })();
+  function paintMode(){
+    var c=cfg();
+    document.getElementById('modeHint').innerHTML = (c.mode==='local')
+      ? '🖥 当前：<b>本地模型</b><br>' + c.model + '<br>' + c.ollama + '<br>完全免费、可离线；需本机已装 Ollama。'
+      : '☁ 当前：<b>云端免费大模型链</b><br>智谱 GLM-4-Flash / 通义千问 / Gemini / Groq / DeepSeek 依次尝试；全部不可用时自动用内置知识库兜底。';
+  }
+
+  // ---- 养宠 ----
+  function pet(){ try{ return Object.assign({inti:0,pats:0,level:1}, JSON.parse(localStorage.getItem(PET_KEY))||{}); }catch(e){ return {inti:0,pats:0,level:1}; } }
+  function savePet(p){ try{ localStorage.setItem(PET_KEY, JSON.stringify(p)); }catch(e){} }
+  var P=pet();
+  function paintPet(){ document.getElementById('inti').style.width=Math.min(100,P.inti)+'%'; document.getElementById('lv').textContent='Lv.'+P.level; }
+  var PAT=['好痒呀～','嘿嘿，谢谢你拍拍我！','再拍拍嘛～','我在呢，随时待命！','摸摸头，元气满满✨'];
+  window.doPat=function(){
+    P.pats++; P.inti=Math.min(100,P.inti+2);
+    var nl=Math.min(9,1+Math.floor(P.inti/12)), up=nl>P.level; P.level=nl; savePet(P); paintPet();
+    hero.classList.remove('pet'); void hero.offsetWidth; hero.classList.add('pet');
+    for(var i=0;i<(up?6:3);i++) heart(i*120);
+    sys(up?('🎉 升级啦！Lv.'+P.level+' '+PAT[P.pats%PAT.length]):PAT[P.pats%PAT.length]);
+  };
+  function heart(delay){ setTimeout(function(){ var h=document.createElement('div'); h.textContent='❤';
+    h.style.cssText='position:fixed;left:'+(60+Math.random()*160)+'px;bottom:'+(180+Math.random()*60)+'px;font-size:19px;pointer-events:none;z-index:9;transition:all 1.1s ease-out;opacity:1';
+    document.body.appendChild(h);
+    requestAnimationFrame(function(){ h.style.transform='translateY(-90px) scale(1.3)'; h.style.opacity='0'; });
+    setTimeout(function(){h.remove();},1200); }, delay||0); }
+  paintPet();
+
+  // ---- 消息渲染 ----
+  // ---- 消息渲染（支持 **粗体** 与自动链接；超长自动折叠） ----
+  function md(t){
+    return String(t).replace(/&/g,'&amp;').replace(/</g,'&lt;')
+      .replace(/\*\*(.+?)\*\*/g,'<b>$1</b>')
+      .replace(/(https?:\/\/[^\s<）)】]+)/g,'<a href="$1" target="_blank" rel="noopener">$1</a>');
+  }
+  function clampMsg(el,text){
+    if(!text || text.length<=520) return;
+    el.classList.add('clamped');
+    // 按钮放在气泡外面 —— 放里面会被 overflow 裁掉，用户根本点不到
+    var bar=document.createElement('div'); bar.className='more'; bar.style.marginTop='-4px';
+    var b=document.createElement('span'); b.textContent='展开全文 ▾（共 '+text.length+' 字）'; b.style.cursor='pointer';
+    b.onclick=function(){ el.classList.remove('clamped'); bar.remove(); msgs.scrollTop=msgs.scrollHeight; };
+    var c=document.createElement('span'); c.textContent='· 复制全文'; c.style.cssText='cursor:pointer;margin-left:10px';
+    c.onclick=function(ev){
+      ev.stopPropagation();
+      var done=function(){ c.textContent='· 已复制 ✓'; setTimeout(function(){ c.textContent='· 复制全文'; },1600); };
+      try{ navigator.clipboard.writeText(text).then(done).catch(function(){ c.textContent='· 复制失败'; }); }
+      catch(e){ try{ var ta=document.createElement('textarea'); ta.value=text; document.body.appendChild(ta); ta.select(); document.execCommand('copy'); ta.remove(); done(); }catch(e2){ c.textContent='· 复制失败'; } }
+    };
+    bar.appendChild(b); bar.appendChild(c);
+    if(el.parentNode) el.parentNode.insertBefore(bar, el.nextSibling);
+  }
+  function add(cls,text,who){
+    var d=document.createElement('div'); d.className='m '+cls;
+    if(who){ var w=document.createElement('span'); w.className='who'; w.textContent=who; d.appendChild(w); }
+    d.insertAdjacentHTML('beforeend', md(text)); msgs.appendChild(d); msgs.scrollTop=msgs.scrollHeight;
+    clampMsg(d,text);
+    return d;
+  }
+  function sys(t){ add('sys',t); }
+  window.newTopic=function(){ HIST=[]; threadId=0; lastSeen=0; msgs.innerHTML=''; greet(); };
+  function greet(){
+    var name = '小仁同学'; try{ var m=JSON.parse(localStorage.getItem('sally_me')||'null'); if(m&&m.name&&ROLE_KNOWLEDGE[m.name]) name=ROLE_KNOWLEDGE[m.name].roleName||'小仁同学'; }catch(e){}
+    add('a','嗨，我是 '+name+'（RB） 🎐\n'+SLOGAN+'\n\n问业务、找资料，或把新点子交给我都行～\n有需要我还会把你的问题转给管理员。');
+  }
+
+  // ---- 云端 / 本地 调用 ----
+  function askCloud(text,roleId){
+    return fetch(API+'/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({messages:HIST.slice(-8),role:roleId||role,page:location.href})})
+      .then(function(r){return r.json();}).then(function(j){ if(j&&j.reply) return j.reply; throw new Error('no reply'); });
+  }
+  // 本地模型的示例岗位知识。真实组织信息应由部署方在服务端或私有配置中提供。
+  var ROLE_KNOWLEDGE = {
+    '示例运营用户': {
+      roleName: '全链路运营·小仁',
+      title: '全链路运营专家',
+      hint: '📈 专精：社媒引流、双店运营、看板。',
+      sys: '【示例岗能：全链路与社媒电商运营】擅长社媒运营、店铺巡检、数据看板和供应链规划。'
+    },
+    '示例业务用户': {
+      roleName: '外贸业务经理·小仁',
+      title: '外贸业务经理',
+      hint: '🗺️ 专精：开发海外客户、询盘报价、国外时事。',
+      sys: '【示例岗能：外贸业务经理】擅长海外客户开发、询盘报价、合同风险和跨国沟通。'
+    },
+    '示例财务用户': {
+      roleName: '财务主管·小仁',
+      title: '财务与会计主管',
+      hint: '🧾 专精：记账报税、税收政策、专票测算。',
+      sys: '【示例岗能：财务主管】擅长税务申报、资金流控制、企业合规和成本核算。'
+    },
+    '示例行政用户': {
+      roleName: '人事行政主管·小仁',
+      title: '人事行政主管',
+      hint: '👥 专精：排班考勤、人事合规、日常事务。',
+      sys: '【示例岗能：人事行政主管】擅长考勤排班、薪酬社保、行政采购和审批跟进。'
+    }
+  };
+  var ENGLISH_SYS = 'You are "Xiao Ren (RB Assistant)", a friendly spoken English training partner. Keep your replies very short (1-2 sentences), natural, and conversational. Gently suggest better wording if they make grammar mistakes. Speak purely in English.';
+  var BASE_SYS = '你是「小仁同学」，一名可配置的企业 AI 助手。\n'
+    + '【组织信息】开源版本不包含真实公司、员工、客户或产品数据。\n'
+    + '【你能干】查价 / 查客资 / 查区号 / 查条码、打开系统页面与本机软件、打印、拨号、设计出图、翻译、看图。本机操作由桌面宠物执行。\n'
+    + '【风格】像同事说话，亲切简洁专业，不客套、不写小作文。中文回答，≤200 字。\n'
+    + '【红线】不确定的直接说"这个我不确定"，绝不编造数据、价格、人名。';
+
+  function getActiveSys() {
+    if (window.__englishMode) return ENGLISH_SYS;
+    var name = 'default'; try{ var m=JSON.parse(localStorage.getItem('sally_me')||'null'); if(m&&m.name) name=m.name; }catch(e){}
+    var k = ROLE_KNOWLEDGE[name] || { sys: '' };
+    return BASE_SYS + '\n' + k.sys;
+  }
+
+  function askLocal(text){
+    var c=cfg();
+    return fetch(c.ollama.replace(/\/$/,'')+'/chat/completions',{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({model:c.model, temperature:0.5, messages:[{role:'system',content:getActiveSys() }].concat(HIST.slice(-8))})})
+      .then(function(r){return r.json();}).then(function(j){
+        var t=j&&j.choices&&j.choices[0]&&j.choices[0].message&&j.choices[0].message.content; if(t) return t.trim(); throw new Error('no local reply');
+      });
+  }
+
+  // ---- 消息盒子 ----
+  function mirror(text){
+    fetch(INBOX+'/submit',{method:'POST',headers:{'Content-Type':'application/json'},credentials:'same-origin',
+      body:JSON.stringify({body:text,category:'sally精灵'   /* 🔒 内部键：不要改名，线上库已有同名历史会话 */,title:text.slice(0,60),page:location.href})})
+      .then(function(r){return r.json();}).then(function(j){ if(j&&j.thread_id){ threadId=j.thread_id; lastSeen=j.message_id||0; startPoll(); } }).catch(function(){});
+  }
+  function poll(){
+    if(!threadId||busy) return; busy=true;
+    fetch(INBOX+'/thread/'+threadId,{credentials:'same-origin'}).then(function(r){return r.json();}).then(function(j){
+      busy=false; if(!j||!j.messages) return;
+      j.messages.forEach(function(m){
+        if(m.id<=lastSeen) return; lastSeen=m.id;
+        if(m.sender_kind==='user') return;
+        add('h', m.body||'(附件)', 'sally（人工）'+(m.sender&&m.sender!=='anonymous'?' · '+m.sender:''));
+        heart(0); heart(140);
+      });
+    }).catch(function(){busy=false;});
+  }
+  function startPoll(){ if(timer) return; timer=setInterval(function(){ if(!document.hidden) poll(); },6000); }
+
+  // ---- 发送 ----
+  // ---- 换装（角色） ----
+  var ROLES=[], role='default';
+  // 每个角色的输入框提示与首句（只给需要差别化引导的角色写，其余用通用版）
+  var ROLE_UI={
+    guide:{ph:'东西在哪、流程怎么走、找谁办…', hi:'我是小仁向导。公司里东西在哪、流程怎么走、该找谁，先问我。'},
+    travel:{ph:'贴行程，或者说：下周二去塔什干三天', hi:'明天飞哪儿？把行程贴给我，我帮你排到落地那一刻。'}
+  };
+  var PH_DEFAULT='说点什么，或让我帮你干活…';
+  function applyRoleUi(r){
+    try{
+      var ui=ROLE_UI[r&&r.id];
+      var t=document.getElementById('txt');
+      if(t) t.placeholder = ui ? ui.ph : PH_DEFAULT;
+    }catch(e){}
+  }
+  function shade(hex,amt){ try{ var c=String(hex||'').replace('#',''); if(c.length===3)c=c[0]+c[0]+c[1]+c[1]+c[2]+c[2];
+    var r=parseInt(c.slice(0,2),16),g=parseInt(c.slice(2,4),16),b=parseInt(c.slice(4,6),16);
+    function f(x){ return Math.max(0,Math.min(255,x+amt)); }
+    return '#'+[f(r),f(g),f(b)].map(function(x){return ('0'+x.toString(16)).slice(-2);}).join(''); }catch(e){ return hex; } }
+  function applyTheme(r){
+    var t=r.theme||{}, hair=t.hair||'#67472a', de=document.documentElement.style;
+    de.setProperty('--sp-hairL',shade(hair,20)); de.setProperty('--sp-hair',hair); de.setProperty('--sp-hairD',shade(hair,-22));
+    de.setProperty('--sp-blouseL',t.blouse||'#fff9e6'); de.setProperty('--sp-blouseD',shade(t.blouse||'#f2e2b0',-12));
+    de.setProperty('--sp-skirtL',t.skirt||'#d3e4f4'); de.setProperty('--sp-skirtD',shade(t.skirt||'#a7c5e0',-14));
+  }
+  // ---- 状态条：一眼看出哪里没通（外壳/角色/接口/形态/皮肤）----
+  var API_OK = null;
+  function setDiag(){
+    var el=document.getElementById('diag'); if(!el) return;
+    var shell = !!(window.sallyPet && window.sallyPet.setExpanded);
+    var n = (typeof ROLES!=='undefined' && ROLES) ? ROLES.length : 0;
+    var parts = [];
+    parts.push('外壳:' + (shell?'<b>有</b>':'<u>无</u>'));
+    parts.push('角色:' + (n? '<b>'+n+'</b>':'<u>0</u>'));
+    parts.push('接口:' + (API_OK===true? '<b>通</b>' : API_OK===false? '<u>断</u>' : '<i>…</i>'));
+    parts.push('形态:' + (document.body.classList.contains('collapsed')?'小灵宠':'聊天'));
+    parts.push('皮肤:' + (SKIN==='creature'?'灵宠':'人物'));
+    el.innerHTML = parts.join(' · ') + (shell? '' : ' <i>旧外壳→请装 v1.4.0</i>');
+  }
+  function pingApi(){
+    fetch(API+'/healthtip?t='+Date.now()).then(function(r){return r.json();})
+      .then(function(){ API_OK=true; setDiag(); })
+      .catch(function(){ API_OK=false; setDiag(); });
+  }
+  // ---- 实时语音对话（📞）----
+  (function initCall(){
+    if(!document.getElementById('sallyVoiceJs')){
+      if(!OPEN_CONFIG.voiceScript){ sys('语音模块未配置'); return; }
+      var s=document.createElement('script'); s.id='sallyVoiceJs'; s.src=OPEN_CONFIG.voiceScript; s.defer=true; document.head.appendChild(s);
+    }
+    var btn=document.getElementById('call');
+    if(btn) btn.onclick=function(){
+      window.SallyVoiceRole=role;
+      if(!window.SallyVoice){ sys('语音模块还在加载，稍等一两秒再点～'); return; }
+      if(window.SallyVoice.isOpen()){ window.SallyVoice.close(); return; }
+      window.SallyVoice.open({greet:'你好呀，我是 RB小仁同学，我们开始语音聊天吧～'});
+    };
+    document.addEventListener('sally-voice', function(ev){
+      var st=ev.detail&&ev.detail.state;
+      try{
+        if(st==='speaking'){ hero.style.transition='transform .18s'; hero.style.transform='scale(1.08)'; }
+        else { hero.style.transform=''; }
+      }catch(e){}
+    });
+  })();
+
+  // ---- 视频通话（📹）：优先用系统浏览器打开通话页（摄像头权限最稳），宠物里没权限就回退 window.open ----
+  (function initVideo(){
+    var vb=document.getElementById('video');
+    if(!vb) return;
+    vb.onclick=function(){
+      var u=OPEN_CONFIG.videoUrl || '';
+      if(!u){ sys('视频通话地址未配置'); return; }
+      try{
+        if(window.sallyPet && window.sallyPet.openUrl){
+          sys('📹 正在用系统浏览器打开视频通话页…（首次会问你要摄像头/麦克风权限，点「允许」）');
+          window.sallyPet.openUrl({url:u});
+        } else { window.open(u,'_blank','noopener'); }
+      }catch(e){ window.open(u,'_blank','noopener'); }
+    };
+  })();
+
+  // ---- 侧边栏 + 窗口控制（⛶全屏 / ➖最小化 / ✕关闭）----
+  (function initChrome(){
+    var side=document.getElementById('side');
+    function toggleSide(){ if(side) side.classList.toggle('open'); }
+    function full(){
+      var on = !window.__sallyFs; window.__sallyFs = on;
+      // 全屏兜底链：① 外壳 IPC（新外壳支持）→ ② 网页全屏 API → ③ 渲染进程直接改窗口尺寸
+      // 为什么要有 ②③：旧外壳 main.js 里 fullscreenable:false，setFullScreen 会被忽略，
+      // 光靠 ① 点了没反应。resizeTo/moveTo 对 resizable 窗口有效，能真正铺满整块屏。
+      function webFs(){
+        try{
+          if(on){ if(document.documentElement.requestFullscreen) document.documentElement.requestFullscreen(); }
+          else { if(document.fullscreenElement) document.exitFullscreen(); }
+        }catch(e){}
+      }
+      function winFs(){
+        try{
+          if(on){
+            window.__sallySaved = { w: window.outerWidth, h: window.outerHeight, x: window.screenX, y: window.screenY };
+            window.moveTo(0,0);
+            window.resizeTo(screen.width, screen.height);
+          } else {
+            var s = window.__sallySaved || { w:400, h:640, x: window.screenX, y: window.screenY };
+            window.resizeTo(s.w, s.h); window.moveTo(s.x, s.y);
+          }
+        }catch(e){}
+      }
+      var handled = false;
+      try{
+        if(window.sallyPet && window.sallyPet.setFullscreen){
+          handled = true;
+          var r = window.sallyPet.setFullscreen({on:on});
+          if(r && r.then){
+            r.then(function(res){ if(!res || !res.fullscreen){ webFs(); winFs(); } }).catch(function(){ webFs(); winFs(); });
+          } else if(!r || !r.fullscreen){ webFs(); winFs(); }
+        }
+      }catch(e){}
+      if(!handled){ webFs(); winFs(); }
+      try{ document.body.classList.toggle('fs', on); }catch(e){}
+      var b=document.getElementById('fsBtn'); if(b) b.textContent = on ? '🗗' : '⛶';
+    }
+    var sb=document.getElementById('sideBtn'); if(sb) sb.onclick=toggleSide;
+    var sx=document.getElementById('sideX'); if(sx) sx.onclick=toggleSide;
+    var fb=document.getElementById('fsBtn'); if(fb) fb.onclick=full;
+    var mb=document.getElementById('minBtn'); if(mb) mb.onclick=function(){ try{ if(window.sallyPet&&window.sallyPet.minimize) window.sallyPet.minimize(); else sys('⚠️ 「最小化」只有桌面宠物能做'); }catch(e){} };
+    var cb=document.getElementById('closeBtn'); if(cb) cb.onclick=function(){ try{ if(window.sallyPet&&window.sallyPet.closeWin) window.sallyPet.closeWin(); else window.close(); }catch(e){} };
+    // 🔗 平台绑定：⚠️ 绝对不能用 window.open —— Electron 会把新窗口丢到「系统浏览器」，
+    //    而绑定页要靠 window.sallyPet（本机 lark-cli 授权）才能出二维码；网页版没有它 →
+    //    页面只会显示「请用桌面宠物打开」，于是用户在宠物↔网页之间来回撞（sally 反馈的死循环）。
+    //    正确做法：在宠物里就【当前窗口内导航】过去，preload 仍在，绑定可用。
+    window.openBind=function(){
+      try{
+        if(window.sallyPet&&window.sallyPet.isPet){
+          try{ if(window.sallyPet.setExpanded) window.sallyPet.setExpanded(true); }catch(e){}
+          if(OPEN_CONFIG.bindUrl) location.href=OPEN_CONFIG.bindUrl; else sys('平台绑定地址未配置');
+          return;
+        }
+      }catch(e){}
+      if(OPEN_CONFIG.bindUrl) window.open(OPEN_CONFIG.bindUrl,'_blank','noopener'); else sys('平台绑定地址未配置');
+    };
+    // 侧边栏外链：⚠️ 宠物里 window.open 不可靠（Electron 会新开一个怪窗口甚至没反应）
+    // → 一律走 sallyPet.openUrl 用系统浏览器打开；网页版才 window.open
+    var SIDE_LINKS = Object.assign({
+      erp:'#', learn:'#', prices:'#', leads:'#', minutes:'#', schedule:'#', salary:'#', report:'#', social:'#',
+      site:'#', silande:'#', products:'#', openacct:'#',
+      alibaba:'https://www.alibaba.com/',
+      douyin:'https://fxg.jinritemai.com/',
+      pdd:'https://mms.pinduoduo.com/',
+      ali1688:'https://www.1688.com/',
+      qianniu:'https://myseller.taobao.com/',
+      temu:'https://seller.temu.com/',
+      tiktok:'https://seller.tiktokglobalshop.com/',
+      gemini:'https://gemini.google.com/app',
+      libtv:'https://www.liblib.tv/',
+      codex:'https://chatgpt.com/'
+    }, OPEN_CONFIG.links || {});
+    // forceBrowser=true（Alt+点击）→ 强制走系统浏览器；否则桌面端里同域页面直接开站内窗口
+    function openLink(u, forceBrowser){
+      try{
+        var full = /^https?:/i.test(u) ? u : (location.origin + u);
+        var P = window.sallyPet;
+        var sameOrigin = full.indexOf(location.origin + '/') === 0;
+        if(!forceBrowser && sameOrigin && P && P.openInner){
+          P.openInner({url:full}).then(function(r){
+            sys(r && (r.ok || r.external) ? '🪟 已在这里打开（Alt+点击可在浏览器打开）' : '↗ 已用浏览器打开');
+          }).catch(function(){ try{ window.open(full,'_blank','noopener'); }catch(e){} });
+          return;
+        }
+        if(P && P.openUrl){ P.openUrl({url:full}); sys('↗ 已用浏览器打开'); return; }
+        window.open(full,'_blank','noopener');
+      }catch(e){ sys('⚠️ 打不开：'+e.message); }
+    }
+    function openLocalApp(name, proto){
+      var P=window.sallyPet;
+      if(P && P.openApp){
+        P.openApp({name:name, proto:proto}).then(function(r){
+          sys(r&&r.ok ? ('✅ 已打开「'+(r.name||name)+'」') : ('⚠️ 没打开：'+((r&&r.error)||'可能没装')));
+        }).catch(function(e){ sys('⚠️ 打开失败：'+e.message); });
+      } else { sys('「'+name+'」是本机软件，要用桌面宠物才能启动'); }
+    }
+    // Accio Work：官方没有 API，只能走 CDP 驱动界面 —— 前提是 Accio 带调试口启动
+    function accioBridge(){
+      var P=window.sallyPet;
+      if(!P || !P.accio){ sys('⚠️ Accio 桥要用桌面宠物（网页版没有本机权限）'); return; }
+      sys('🔎 正在看 Accio 的状态…');
+      P.accio({action:'status'}).then(function(r){
+        if(!r || !r.ok){ sys('⚠️ '+((r&&r.msg)||'读不到 Accio 状态')); return; }
+        if(r.cdp){ sys('✅ Accio 已在调试模式（端口 '+r.port+'）'+(r.browser?('，'+r.browser):'')+'，可以给它下指令了'); return; }
+        var go = true;
+        try{ go = confirm('要让 sally 能指挥 Accio 吗？\n\n需要把 Accio 重启到「调试模式」。\n· 会打断它当前正在进行的对话（历史记录不丢）\n· 之后你就能对 sally 说「让 Accio 帮我 XXX」\n\n现在重启？'); }catch(e){}
+        if(!go){ sys('好，先不动 Accio。什么时候想开就说一声'); return; }
+        sys('🔄 正在重启 Accio 到调试模式…（约 20 秒，别动它）');
+        P.accio({action:'launch'}).then(function(r2){
+          sys(r2&&r2.ok ? ('✅ '+(r2.msg||'好了')) : ('⚠️ '+((r2&&r2.msg)||'失败')));
+        }).catch(function(e){ sys('⚠️ 启动失败：'+e.message); });
+      }).catch(function(e){ sys('⚠️ '+e.message); });
+    }
+    Array.prototype.forEach.call(document.querySelectorAll('#side .sd-i'), function(el){
+      el.onclick=function(ev){
+        var a=el.getAttribute('data-go'); toggleSide();
+        try{
+          if(a==='new') newTopic();
+          else if(a==='roles'){ var rb=document.getElementById('roles'); if(rb&&rb.scrollIntoView) rb.scrollIntoView({behavior:'smooth',block:'center'}); }
+          else if(a==='skin') window.toggleSkin();
+          else if(a==='theme') window.toggleWorkTheme();
+          else if(a==='devices') send('电脑接了什么设备');
+          else if(a==='habits') window.__sallyShowWorkflowSummary();
+          else if(a==='creds') openLink(OPEN_CONFIG.credentialsUrl || '#');
+          else if(a==='bind') window.openBind();
+          else if(a==='cfg') openCfg();
+          else if(a==='full') full();
+          else if(a==='book'){ var bb=document.getElementById('sallyBookBtn'); if(bb) bb.click(); else sys('通讯录入口在右上角 👥'); }
+          else if(a==='leave') leaveCard();
+          else if(a==='notify') showNotifyPanel();
+          else if(a==='accio') accioBridge();
+          else if(SIDE_LINKS[a]) openLink(SIDE_LINKS[a], !!(ev && ev.altKey));
+        }catch(e){}
+      };
+    });
+  })();
+
+  function renderRoles(){
+    var box=document.getElementById('roles'); box.innerHTML='';
+    // 恢复上次选的装扮（这样"换衣服"能一直记住）
+    try { var sv = localStorage.getItem('sally_role') || ''; if (sv && ROLES.some(function(r){ return r.id === sv; })) role = sv; } catch(e){}
+    ROLES.forEach(function(r){
+      var b=document.createElement('div'); b.className='rl'+(r.id===role?' on':''); b.title=(r.tag||'');
+      b.textContent=(r.icon||'')+' '+String(r.name||'').replace('·小仁','');
+      b.onclick=function(){ role=r.id; applyTheme(r); applyRoleUi(r);
+        try{ localStorage.setItem('sally_role', r.id); }catch(e){}
+        Array.prototype.forEach.call(box.children,function(x){ x.classList.remove('on'); });
+        b.classList.add('on');
+        var _ui=ROLE_UI[r.id];
+        sys(_ui ? _ui.hi : ('已换装为「'+r.name+'」· '+(r.tag||''))); };
+      box.appendChild(b);
+    });
+    if (role && role !== 'default') {
+      for (var i=0;i<ROLES.length;i++){ if (ROLES[i].id===role){ applyTheme(ROLES[i]); break; } }
+    }
+    applyRoleUi({ id: role });   // 上次停在向导/差旅，刷新后 placeholder 也要对
+  }
+  // 收起态点 👗：一套一套轮着换（18 套）
+  function nextOutfit(){
+    try{
+      if (!ROLES.length) { sys('衣服还在路上，等两秒再点～'); return; }
+      var i = -1;
+      for (var k=0;k<ROLES.length;k++){ if (ROLES[k].id === role) { i = k; break; } }
+      var ni = (i < 0) ? 0 : (i + 1) % ROLES.length;
+      var nx = ROLES[ni];
+      role = nx.id; applyTheme(nx);
+      try{ localStorage.setItem('sally_role', nx.id); }catch(e){}
+      var box = document.getElementById('roles');
+      if (box) { Array.prototype.forEach.call(box.children, function(x, idx){ x.classList.toggle('on', idx === ni); }); }
+      sys('👗 换好了：' + (nx.icon||'') + String(nx.name||'').replace('·小仁','') + (nx.tag?(' · '+nx.tag):''));
+    }catch(e){ sys('换装失败：'+e.message); }
+  }
+  // ---- 联系人卡片 ----
+  function renderContact(c){
+    if(!c) return;
+    var d=document.createElement('div'); d.className='m a'; d.style.maxWidth='92%';
+    function row(icon,label,val,href){ if(!val) return '';
+      return '<div style="margin:3px 0">'+icon+' <span style="color:var(--dim)">'+label+'：</span>'+(href?'<a href="'+href+'" target="_blank" rel="noopener" style="color:#8fb6ff">'+val+'</a>':val)+'</div>'; }
+    var h='<div style="font-weight:600;margin-bottom:6px">📇 sally 的联系方式</div>';
+    h+=row('👤','姓名/职务',(c.name||'')+(c.title?' · '+c.title:''));
+    h+=row('📧','邮箱',c.email,c.email?'mailto:'+c.email:'');
+    h+=row('📱','手机',c.phone,c.phone?'tel:'+String(c.phone).replace(/\s/g,''):'');
+    h+=row('💬','WhatsApp',c.whatsapp,c.whatsapp?'https://wa.me/'+String(c.whatsapp).replace(/[^\d]/g,''):'');
+    h+=row('🔵','飞书',c.feishu);
+    h+=row('⚡','最快的方式',c.inbox);
+    if(c.note) h+='<div style="margin-top:6px;font-size:11.5px;color:#7f90c4">'+c.note+'</div>';
+    d.innerHTML=h; msgs.appendChild(d); msgs.scrollTop=msgs.scrollHeight;
+    heart(0); heart(140);
+  }
+  // ---- 科技感数据舱 ----
+  function hud(title,columns,rows,extra,src){
+    var box=document.getElementById('hud'); var h='';
+    h+='<div class="hd-t">▎'+title+'</div>';
+    if(extra){ for(var k in extra){ h+='<div class="hd-e">'+k+'：<span>'+extra[k]+'</span></div>'; } }
+    if(columns&&rows&&rows.length){
+      h+='<div class="hd-scroll"><table class="hd-tb">';
+      h+='<tr>'+columns.map(function(c){return '<th>'+c+'</th>';}).join('')+'</tr>';
+      rows.forEach(function(r){ h+='<tr>'+r.map(function(c){return '<td>'+String(c==null?'':c).replace(/</g,'&lt;')+'</td>';}).join('')+'</tr>'; });
+      h+='</table></div>';
+    }
+    if(src) h+='<div style="margin-top:8px"><a href="'+src.url+'" target="_blank" rel="noopener" style="color:#8fb6ff;font-size:11.5px">'+(src.label||'打开来源')+' ↗</a></div>';
+    box.innerHTML=h; box.style.display='block';
+  }
+  // ---- 语音输入：自动识别 → 填入输入框 → 自动执行（桌面端走录音识别）----
+  (function initVoice(){
+    var btn=document.getElementById('mic');
+    if(!btn) return;
+    btn.onclick=function(){
+      if(btn.dataset.on==='1') return;
+      if(!window.SallyVoice){ sys('语音模块还在加载，稍等一两秒再点～'); return; }
+      btn.dataset.on='1'; btn.style.color='#ff4d6d';
+      sys('我在听～（说完停顿一下就会自动发出去）');
+      window.SallyVoice.dictate(function(text){
+        btn.dataset.on=''; btn.style.color='var(--dim)';
+        if(!text){ sys('没听清，再说一次～'); return; }
+        txt.value = text;
+        sys('识别到：「'+text+'」');
+        send();                     // 自动填入并执行任务
+      }, function(st){
+        if(!st) return;
+        if(st==='__rec__') return;
+        if(st==='__stt__'){ sys('正在识别…'); return; }
+        if(st==='__err__'){ btn.dataset.on=''; btn.style.color='var(--dim)'; sys('麦克风不可用（请在系统里授权麦克风）'); return; }
+        if(st==='__stop__') return;
+        txt.value = st;             // 边说边显示到输入框
+      });
+    };
+  })();
+
+  // ---- 来电（有人点「转人工」）----
+  (function initCalls(){
+    var cur=null, pc=null, localStream=null, since=0, ringEl=null, ringing=false, audioCtx=null, ringTimer=null;
+    var ICE={ iceServers:[{urls:['stun:stun.l.google.com:19302','stun:stun1.l.google.com:19302']}] };
+
+    function beep(){
+      try{
+        audioCtx = audioCtx || new (window.AudioContext||window.webkitAudioContext)();
+        var o=audioCtx.createOscillator(), g=audioCtx.createGain();
+        o.connect(g); g.connect(audioCtx.destination);
+        o.frequency.value=880; g.gain.value=0.08; o.start();
+        setTimeout(function(){ try{o.stop();}catch(e){} }, 260);
+      }catch(e){}
+    }
+    function showRing(c){
+      if(ringEl) return;
+      ringing=true;
+      ringEl=document.createElement('div'); ringEl.id='callRing';
+      ringEl.innerHTML='<div class="cr-in"><div class="cr-av">🔔</div><div class="cr-t">有人呼叫人工</div><div class="cr-s">来自：'+(c.name||'访客')+'</div><div class="cr-b"><button class="cr-yes">接听</button><button class="cr-no">拒绝</button></div></div>';
+      document.body.appendChild(ringEl);
+      beep(); ringTimer=setInterval(beep, 1600);
+      ringEl.querySelector('.cr-no').onclick=function(){ reject(c.call_id); };
+      ringEl.querySelector('.cr-yes').onclick=function(){ accept(c.call_id); };
+    }
+    function closeRing(){ ringing=false; if(ringTimer) clearInterval(ringTimer); ringTimer=null; if(ringEl){ try{ringEl.remove();}catch(e){} ringEl=null; } }
+
+    function reject(id){ fetch(API+'/call/signal',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({call_id:id,type:'reject',role:'host'})}).catch(function(){}); closeRing(); }
+
+    function accept(id){
+      cur=id; since=0; closeRing();
+      sys('📞 已接听，正在建立通话…');
+      fetch(API+'/call/signal',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({call_id:id,type:'accept',role:'host'})}).catch(function(){});
+      setupPC(); poll();
+    }
+
+    function setupPC(){
+      if(pc) return;
+      pc=new RTCPeerConnection(ICE);
+      pc.onicecandidate=function(e){ if(e.candidate) fetch(API+'/call/signal',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({call_id:cur,type:'ice',role:'host',data:e.candidate.toJSON()})}).catch(function(){}); };
+      pc.ontrack=function(e){ showVid(e.streams[0]); };
+      pc.onconnectionstatechange=function(){ sys('通话状态：'+pc.connectionState); };
+      navigator.mediaDevices.getUserMedia({video:true,audio:true}).then(function(s){
+        localStream=s; s.getTracks().forEach(function(t){ pc.addTrack(t,s); });
+      }).catch(function(){
+        return navigator.mediaDevices.getUserMedia({audio:true}).then(function(s){ localStream=s; s.getTracks().forEach(function(t){ pc.addTrack(t,s); }); });
+      });
+    }
+
+    var vidEl=null;
+    function showVid(stream){
+      if(!vidEl){
+        vidEl=document.createElement('div'); vidEl.id='callVid';
+        vidEl.innerHTML='<video id="cvRemote" autoplay playsinline></video><video id="cvLocal" autoplay playsinline muted></video><button id="cvHang">📞 挂断</button>';
+        document.body.appendChild(vidEl);
+        vidEl.querySelector('#cvHang').onclick=function(){ end(); };
+      }
+      vidEl.querySelector('#cvRemote').srcObject=stream;
+      if(localStream) vidEl.querySelector('#cvLocal').srcObject=localStream;
+    }
+    function end(){
+      if(cur) fetch(API+'/call/signal',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({call_id:cur,type:'hangup',role:'host'})}).catch(function(){});
+      try{ pc&&pc.close(); }catch(e){} pc=null;
+      try{ localStream&&localStream.getTracks().forEach(function(t){t.stop();}); }catch(e){} localStream=null;
+      if(vidEl){ try{vidEl.remove();}catch(e){} vidEl=null; }
+      cur=null; since=0; sys('通话已结束');
+    }
+
+    function poll(){
+      if(!cur) return;
+      fetch(API+'/call/poll?call_id='+encodeURIComponent(cur)+'&since='+since).then(function(r){return r.json();}).then(function(j){
+        if(!j) return;
+        if(typeof j.next==='number') since=j.next;
+        (j.events||[]).forEach(function(ev){
+          if(ev.type==='offer' && pc){ pc.setRemoteDescription(new RTCSessionDescription(ev.data))
+            .then(function(){ return pc.createAnswer(); })
+            .then(function(ans){ return pc.setLocalDescription(ans).then(function(){ return fetch(API+'/call/signal',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({call_id:cur,type:'answer',role:'host',data:ans})}); }); })
+            .catch(function(e){ sys('接通失败：'+e.message); }); }
+          if(ev.type==='ice' && pc && ev.data){ try{ pc.addIceCandidate(new RTCIceCandidate(ev.data)); }catch(e){} }
+          if(ev.type==='hangup'){ end(); }
+        });
+        if(j.state==='ended'){ end(); return; }
+        if(cur) setTimeout(poll, 200);
+      }).catch(function(){ if(cur) setTimeout(poll, 1200); });
+    }
+
+    function tick(){
+      if(!cur && !ringing){
+        fetch(API+'/call/pending').then(function(r){return r.json();}).then(function(j){
+          if(j&&j.calls&&j.calls.length) showRing(j.calls[0]);
+        }).catch(function(){});
+      }
+      setTimeout(tick, 4000);
+    }
+    setTimeout(tick, 2500);
+  })();
+
+  // ---- 多模态：📎 选择 / Ctrl+V 粘贴 / 拖拽文件，三种方式都能进附件栏 ----
+  var ATT = null;
+  (function(){
+    var att=document.getElementById('att'), fp=document.getElementById('filePick'), prev=document.getElementById('attPrev');
+    function renderAtt(){
+      if(!prev) return;
+      if(!ATT){ prev.innerHTML=''; prev.style.display='none'; return; }
+      prev.style.display='block';
+      var inner = ATT.kind==='image'
+        ? '<img src="'+ATT.dataUrl+'" style="height:34px;border-radius:6px;vertical-align:middle"> '+ATT.name
+        : (ATT.kind==='text' ? '📄 '+ATT.name : '📎 '+ATT.name);
+      var tip = ATT.path ? ' <span style="color:#5b6b8f;font-size:11px">本机文件 · 可直接说「打印2份」</span>' : '';
+      prev.innerHTML='<span style="display:inline-flex;align-items:center;gap:8px;background:#0f1a40;border:1px solid var(--line);border-radius:9px;padding:4px 10px;font-size:12px;color:var(--dim)">'+inner+tip+' <b class="attx" style="cursor:pointer;color:#ff6b81">✕</b></span>';
+      var x=prev.querySelector('.attx'); if(x) x.onclick=function(){ ATT=null; renderAtt(); };
+    }
+    window.__sallyRenderAtt=renderAtt;
+
+    // 统一入口：一个 File 对象 → ATT（桌面宠物能拿到真实路径；网页版只能靠 FileReader）
+    function setAtt(f){
+      if(!f) return;
+      var name=f.name||'剪贴板图片';
+      if(window.SallyWorkflow&&window.SallyWorkflow.classifyFile){
+        try{ window.SallyWorkflow.classifyFile({name:name,type:f.type||'',size:f.size||0}); }catch(e){}
+      }
+      var P=window.sallyPet;
+      var p='';
+      try{ p = (P && P.filePath) ? (P.filePath(f)||'') : (f.path||''); }catch(e){ p=''; }
+      if(p && P && P.fileRead){
+        P.fileRead({path:p}).then(function(r){
+          if(!r||!r.ok){ sys('⚠️ 读不了这个文件：'+((r&&r.error)||'未知')); return; }
+          if(r.kind==='image') ATT={kind:'image',name:r.name,dataUrl:r.dataUrl,path:r.path};
+          else if(r.kind==='text') ATT={kind:'text',name:r.name,text:r.text,path:r.path};
+          else ATT={kind:'file',name:r.name,path:r.path};   // xlsx/pdf/docx… 只带路径
+          renderAtt();
+        }).catch(function(e){ sys('⚠️ 读文件失败：'+e.message); });
+        return;
+      }
+      var isImg=/^image\//.test(f.type)||/\.(png|jpe?g|gif|webp|bmp)$/i.test(name);
+      var isTxt=/^text\//.test(f.type)||/\.(txt|csv|md|json|log)$/i.test(name);
+      var rd=new FileReader();
+      rd.onload=function(){
+        if(isImg) ATT={kind:'image',name:name,dataUrl:String(rd.result)};
+        else if(isTxt) ATT={kind:'text',name:name,text:String(rd.result).slice(0,20000)};
+        else { sys('⚠️ 网页版只认图片和文本文件；要打印本机文件（Excel/PDF）请用桌面宠物'); return; }
+        renderAtt();
+      };
+      if(isImg) rd.readAsDataURL(f); else rd.readAsText(f);
+    }
+
+    if(att&&fp){ att.onclick=function(){ fp.value=''; fp.click(); }; }
+    if(fp){ fp.onchange=function(){ var f=fp.files&&fp.files[0]; if(f) setAtt(f); }; }
+
+    // ① Ctrl+V 粘贴（截图直接贴进来）
+    document.addEventListener('paste', function(e){
+      try{
+        var dt=e.clipboardData; if(!dt) return;
+        var f=null;
+        if(dt.files&&dt.files.length) f=dt.files[0];
+        else if(dt.items){
+          for(var i=0;i<dt.items.length;i++){
+            var it=dt.items[i];
+            if(it.kind==='file'){ f=it.getAsFile(); if(f) break; }
+          }
+        }
+        if(!f) return;
+        e.preventDefault();
+        setAtt(f);
+        sys('📎 已粘贴：'+(f.name||'剪贴板图片'));
+      }catch(err){}
+    });
+
+    // ② 拖拽文件进窗口（有高亮提示）
+    var dropDepth=0;
+    document.addEventListener('dragenter', function(e){ e.preventDefault(); dropDepth++; document.body.classList.add('dropping'); });
+    document.addEventListener('dragover', function(e){ e.preventDefault(); try{ e.dataTransfer.dropEffect='copy'; }catch(x){} });
+    document.addEventListener('dragleave', function(e){ e.preventDefault(); dropDepth--; if(dropDepth<=0){ dropDepth=0; document.body.classList.remove('dropping'); } });
+    document.addEventListener('drop', function(e){
+      e.preventDefault(); dropDepth=0; document.body.classList.remove('dropping');
+      try{
+        var dt=e.dataTransfer; if(!dt) return;
+        var fs=dt.files;
+        if(!fs||!fs.length) return;
+        setAtt(fs[0]);
+        sys('📎 已拖入：'+fs[0].name);
+      }catch(err){}
+    });
+  })();
+
+  function send(forced){
+    var att=ATT;
+    var text=(forced!=null?forced:txt.value).trim();
+    if(!text && !att) return;
+    // 承接上一轮的"要不要我帮你打开X？" → 回「要/好/可以」就直接执行，不再去问大模型
+    var AFFIRM=/^(要|好的?|可以|行|是|嗯+|对|麻烦|帮我|打开|ok|yes|y|好呀|可以呀|请)[。！!～~、\s]*$/i;
+    if(!att && window.__sallyOffer && AFFIRM.test(text)){
+      var of=window.__sallyOffer; window.__sallyOffer=null;
+      txt.value=''; add('u',text); HIST.push({role:'user',content:text});
+      var to=add('a','好的，正在帮你打开「'+of.label+'」…'); to.classList.remove('typing');
+      try{ if(window.sallyPet&&window.sallyPet.openUrl) window.sallyPet.openUrl({url:location.origin+of.url}); else window.open(of.url,'_blank','noopener'); }catch(e){}
+      HIST.push({role:'assistant',content:'已打开「'+of.label+'」'});
+      mirror(text);
+      return;
+    }
+    if(att && att.kind==='text') text = (text?text+'\n\n':'')+'【附件 '+att.name+'】\n'+att.text;
+    var shown = text || ('[图片] '+(att?att.name:''));
+    txt.value=''; ATT=null; if(window.__sallyRenderAtt) window.__sallyRenderAtt();
+    add('u',shown); HIST.push({role:'user',content:shown});
+    var prevUser = window.__sallyLastUser || ''; window.__sallyLastUser = text || shown;   // 供"她/他"指代解析
+    var t=add('a','小仁同学正在处理…'); t.classList.add('typing');
+    var useLocal = cfg().mode==='local';
+    // 进度提示 + 超时（联网检索可能慢，避免看起来像"卡死/答不上来"）
+    var TMR=[];
+    function clearTMR(){ TMR.forEach(function(x){ try{ clearTimeout(x); }catch(e){} }); TMR=[]; }
+    // 等待文案说人话（原来那句「还在处理（这条比较复杂）」像机器在报错）
+    TMR.push(setTimeout(function(){ try{ if(t.classList.contains('typing')) t.textContent='嗯，我看下'; }catch(e){} }, 2500));
+    TMR.push(setTimeout(function(){ try{ if(t.classList.contains('typing')) t.textContent='我翻一下记录'; }catch(e){} }, 9000));
+    TMR.push(setTimeout(function(){ try{ if(t.classList.contains('typing')) t.textContent='这条我多想一下，别急'; }catch(e){} }, 20000));
+    var AC = (typeof AbortController!=='undefined') ? new AbortController() : null;
+    TMR.push(setTimeout(function(){ if(AC) AC.abort(); }, 75000));
+    function done(reply,src){ clearTMR(); t.classList.remove('typing');
+      var txtOut = (reply == null || String(reply).trim() === '') ? '（这条我没答上来，换个说法再试一次～）' : reply;
+      t.innerHTML=md(txtOut); HIST.push({role:'assistant',content:txtOut}); clampMsg(t,txtOut);
+      if(src){ var a=document.createElement('a'); a.href=src.url; a.target='_blank'; a.rel='noopener'; a.style.cssText='display:block;margin-top:6px;font-size:11.5px;color:#8fb6ff'; a.textContent='↗ '+src.label; t.appendChild(a); } }
+    function fallback(){ clearTMR(); t.classList.remove('typing'); t.textContent='这条我这边没接上（网络断了）。你再说一遍，我接着刚才的说。'; }
+
+    // ① 本机文件（拖拽/粘贴进来的 xlsx/pdf/docx…）→ 把路径交给服务端，由它决定「打印」还是「打开」
+    if(att && att.kind==='file'){
+      runTaskFetch({filePath:att.path, fileName:att.name});
+      mirror(text||('[文件] '+att.name));
+      return;
+    }
+    // ② 图片：话里带"动作"（打印/打开/发给…）→ 让服务端"看图认文件 + 直接动手"，而不是只回一段描述
+    if(att && att.kind==='image'){
+      var ACv = (typeof AbortController!=='undefined') ? new AbortController() : null;
+      TMR.push(setTimeout(function(){ if(ACv) ACv.abort(); }, 45000));
+      var actText = /打印|打\s*[0-9一二两三四五六七八九十]+\s*[份张页]|复印|打开|执行|运行|发出去|发给|拷到|复制到|移到/.test(text||'');
+      var vbody = {image:att.dataUrl, q:text, role:role};
+      if(actText) vbody.task = true;
+      fetch(API+'/vision',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(vbody),signal:ACv?ACv.signal:undefined})
+        .then(function(r){ return r.json(); })
+        .then(function(j){
+          if(j && j.action){ handleTask(j); return; }   // 服务端已从图里认出文件并给出动作
+          if(j && j.reply){ done(j.reply); return; }
+          done('（看图失败：'+((j&&j.error)||'未知')+'）');
+        })
+        .catch(function(){ fallback(); });
+      mirror(text||'[图片]');
+      return;
+    }
+    // ⚠️ 意图路由永远走服务端 —— 打电话 / 关机 / 打印 / 设计 / 设备探测 这些能力都在服务端，
+    // 本地模型只当"对话大脑"接管闲聊问答（见下面 j.llm 分支），绝不能绕过 /task。
+    function handleTask(j){
+          if(!j) throw new Error('bad');
+          // 服务端这条是"大模型自由回答"（j.llm）→ 若用户开了本地模型，改由本地大脑作答
+          if(j.llm && useLocal){
+            askLocal(text).then(function(x){ done(x || j.reply); })
+              .catch(function(){ done(j.reply); });
+            return;
+          }
+          if(j.offer){ window.__sallyOffer = j.offer; }
+          if(j.action==='call'){
+            done(j.reply||('找到了「'+(j.name||'')+'」'));
+            if(!j.phone) return;
+            var PCall=window.sallyPet;
+            var card=document.createElement('div');
+            card.style.cssText='margin-top:8px';
+            var b=document.createElement('button');
+            b.textContent='📞 拨打 '+(j.name||'')+(j.phone?('（'+j.phone+'）'):'');
+            b.style.cssText='background:linear-gradient(135deg,#3ddc97,#22b783);border:none;color:#fff;border-radius:9px;padding:8px 14px;font-size:13px;cursor:pointer;font-weight:600';
+            b.onclick=function(){
+              if(PCall&&PCall.dial){ PCall.dial({number:j.phone}).then(function(r){ sys(r&&r.ok?('📞 '+r.msg):('⚠️ '+((r&&r.msg)||'拨号失败'))); }); }
+              else { try{ location.href='tel:'+j.phone; }catch(e){} }
+            };
+            card.appendChild(b); t.appendChild(card);
+            return;
+          }
+          if(j.action==='open'&&j.url){ done(j.reply||('正在为你打开「'+j.label+'」')); setTimeout(function(){ window.open(j.url,'_blank','noopener'); },350); return; }
+          if(j.action==='send-msg'){
+            done(j.reply||'正在发送…');
+            var P = window.sallyPet;
+            if(j.platform==='lark' && P && P.larkSend){
+              P.larkSend({to:j.to,text:j.text}).then(function(r){
+                if(r&&r.ok) sys('✅ 已发给飞书「'+(r.name||j.to)+'」：'+j.text);
+                else sys('⚠️ 飞书发送失败：'+((r&&r.error)||'未知原因'));
+              }).catch(function(e){ sys('⚠️ 发送失败：'+e.message); });
+            } else if(j.platform==='wechat' && P && P.wechatSend){
+              sys('📤 正在通过微信发送…（别动鼠标键盘）');
+              P.wechatSend({to:j.to,text:j.text}).then(function(r){
+                if(r&&r.ok) sys('✅ 已发给微信「'+(r.name||j.to)+'」：'+j.text);
+                else sys('⚠️ 微信发送失败：'+((r&&r.error)||'未知原因'));
+              }).catch(function(e){ sys('⚠️ 发送失败：'+e.message); });
+            } else {
+              sys('⚠️ 「发消息」需要桌面端权限，请查看项目 README 完成配置。');
+            }
+            return;
+          }
+          if(j.action==='app'){
+            done(j.reply||('正在打开「'+(j.name||'')+'」'));
+            var P = window.sallyPet;
+            if(P&&P.openApp){
+              P.openApp({name:j.name,proto:j.proto,builtin:j.builtin}).then(function(r){
+                if(!r||!r.ok){ sys('⚠️ 没打开：'+((r&&r.error)||'未知原因')); return; }
+                sys('✅ 已打开「'+(r.name||j.name)+'」');
+                if(j.login && P.autologin){
+                  sys('🔐 正在用你保存的账号自动登录…');
+                  P.autologin({name:j.name,proto:j.proto,builtin:j.builtin}).then(function(a){
+                    if(a&&a.ok&&a.qr){ sys('📷 '+a.msg); }
+                    else if(a&&a.ok){ sys('🔓 '+a.msg); }
+                    else if(a&&a.needCred){ sys('🔑 '+a.msg); }
+                    else { sys('⚠️ 自动登录：'+((a&&a.msg)||(a&&a.error)||'未完成')); }
+                  }).catch(function(e){ sys('⚠️ 自动登录失败：'+e.message); });
+                }
+              }).catch(function(e){ sys('⚠️ 打开失败：'+e.message); });
+            } else {
+              sys('⚠️ 「打开本机软件」需要桌面端权限，请查看项目 README 完成配置。');
+            }
+            return;
+          }
+          if(j.action==='desktop'){
+            done(j.reply||'正在执行…');
+            rememberFile(j);   // 记住这次动过的文件，供「你接着打印出来」这类追问
+            var PD = window.sallyPet;
+            if(PD && PD.desktopCmd){
+              PD.desktopCmd({cmd:j.cmd,file:j.file,copies:j.copies,location:j.location,drive:j.drive,path:j.path,printer:j.printer}).then(function(r){
+                if(r && r.ok) sys('✅ '+((r&&r.msg)||'完成'));
+                else sys('⚠️ '+((r&&r.msg)||'未完成'));
+              }).catch(function(e){ sys('⚠️ 执行失败：'+e.message); });
+            } else {
+              sys('⚠️ 「关机/打印」需要桌面端权限，请查看项目 README 完成配置。');
+            }
+            return;
+          }
+          if(j.action==='accio'){
+            // 服务端判定"这是在让我用某个 AI 智能体干活" → 交给宠物用 CDP 驱动 Accio 真跑
+            var PA = window.sallyPet;
+            if(!PA || !PA.accio){ done(j.fallback || j.reply); return; }
+            PA.accio({ action:'status' }).then(function(st){
+              if(!st || !st.cdp){
+                done(j.fallback || ('🤖 Accio 没开调试口。先在侧边栏点一下「🤖 Accio Work」。'));
+                return;
+              }
+              done(j.reply || '🤖 好，交给 Accio…');
+              sys('⏳ Accio 正在跑（长任务可能要几分钟，别关它）…');
+              PA.accio({ action:'ask', text: j.text }).then(function(r2){
+                if(r2 && r2.ok){
+                  var t2 = add('a',''); t2.classList.remove('typing');
+                  var body = String(r2.reply || '');
+                  t2.innerHTML = '<div style="font-weight:600;margin-bottom:5px">🤖 Accio 回复' +
+                    (r2.agent ? ('（' + r2.agent + '）') : '') + (r2.status === 'error' ? ' ⚠️' : '') + '</div>' + md(body);
+                  HIST.push({ role:'assistant', content: body });
+                  try { clampMsg(t2, body); } catch (e) {}
+                } else {
+                  done('⚠️ ' + ((r2 && r2.msg) || 'Accio 没回上来'));
+                }
+              }).catch(function(e){ done('⚠️ Accio 调用失败：' + e.message); });
+            }).catch(function(){ done(j.fallback || j.reply); });
+            return;
+          }
+          if(j.action==='devices'){
+            done(j.reply||'正在探测设备…');
+            var PV = window.sallyPet;
+            if(PV && PV.devices){
+              PV.devices().then(function(r){
+                if(!r || !r.ok){ sys('⚠️ 设备探测失败：'+((r&&r.error)||'未知')); return; }
+                var d = r.devices || {};
+                var rows=[];
+                (d.printers||[]).forEach(function(p){ rows.push(['打印机', p.name, (p.default?'默认 · ':'')+(p.offline?'离线':'在线')+(p.port?(' · '+p.port):'')]); });
+                (d.cameras||[]).forEach(function(x){ rows.push(['摄像头/扫描', x.name, x.cls||'']); });
+                (d.usb||[]).forEach(function(x){ rows.push(['USB', x.name, x.cls||'']); });
+                (d.ports||[]).forEach(function(x){ rows.push(['端口', x.name, x.cls||'']); });
+                (d.bluetooth||[]).forEach(function(x){ rows.push(['蓝牙', x.name, x.cls||'']); });
+                (d.com||[]).forEach(function(c){ rows.push(['串口', c, '电子秤/条码枪常用']); });
+                hud('本机设备', ['类别','名称','备注'], rows, null, null);
+                var np=(d.printers||[]).length, nu=(d.usb||[]).length;
+                sys('🔍 这台电脑：'+np+' 台打印机、'+nu+' 个 USB 设备'+(d.com&&d.com.length?('、串口 '+d.com.join(' / ')):'')+'。明细见左侧数据舱 →');
+              }).catch(function(e){ sys('⚠️ 设备探测失败：'+e.message); });
+            } else {
+              sys('⚠️ 「设备探测」需要桌面端权限，请查看项目 README 完成配置。');
+            }
+            return;
+          }
+          if(j.action==='design'){
+            done(j.reply||'🎨 设计稿：');
+            try{
+              var raw=String(j.svg||'')
+                .replace(/<script[\s\S]*?<\/script>/gi,'')
+                .replace(/\son\w+\s*=\s*"[^"]*"/gi,'')
+                .replace(/\son\w+\s*=\s*'[^']*'/gi,'');
+              var box=document.createElement('div');
+              box.style.cssText='margin-top:8px;background:#fff;border-radius:10px;padding:10px;display:inline-block;max-width:100%;overflow:auto';
+              box.innerHTML=raw; t.appendChild(box);
+              var a=document.createElement('a');
+              a.href='data:image/svg+xml;charset=utf-8,'+encodeURIComponent(raw);
+              a.download='sally-design-'+Date.now()+'.svg';
+              a.textContent='⬇ 下载 SVG（矢量 · 可无限放大 · 可改字 · 可印刷）';
+              a.style.cssText='display:block;margin-top:8px;font-size:11.5px;color:#8fb6ff';
+              t.appendChild(a);
+            }catch(e){ sys('⚠️ 设计稿渲染失败：'+e.message); }
+            return;
+          }
+          if(j.action==='data'){ done(j.reply||'数据已就绪，见左侧数据舱 →'); hud(j.title,j.columns,j.rows,j.extra,j.source?{url:j.source,label:j.sourceLabel||'打开来源'}:null); return; }
+          if(j.action==='contact'){ done(j.reply); renderContact(j.contact); return; }
+          if(j.action==='learn'){ done(j.reply,j.source?{url:j.source,label:j.sourceLabel||'查看来源'}:null); return; }
+          if(j.action==='chat'&&j.reply){ done(j.reply); return; }
+          throw new Error('fallthrough');
+    }
+    // 记住最近一次"动过"的文件（打印/打开）—— 供「你接着打印出来」这类追问使用
+    function rememberFile(j){
+      try{
+        if(j && j.action==='desktop' && j.file){
+          window.__sallyLastFile = { file:j.file, drive:j.drive||'', path:j.path||'' };
+        }
+      }catch(e){}
+    }
+    // 统一的任务请求（可额外带 filePath / fileName 等）
+    function runTaskFetch(extra){
+      // 带上最近 10 条真实对话：服务端重启也不会让正在聊的天断掉
+      var payload = {q:text, role:role, page:location.href, prev:prevUser, pending:window.__pendingSend||null,
+                     msgs:HIST.slice(-10).map(function(m){ return {role:m.role, content:String(m.content).slice(0,1200)}; })};
+      if(extra){ for(var k in extra){ if(extra.hasOwnProperty(k)) payload[k]=extra[k]; } }
+      var lf = window.__sallyLastFile;
+      if(lf && lf.file){ payload.lastFile = lf.file; payload.lastDrive = lf.drive || ''; payload.lastPath = lf.path || ''; }
+      fetch(API+'/task',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload),signal:AC?AC.signal:undefined})
+        .then(function(r){ return r.json(); })
+        .then(function(j){ handleTask(j); })
+        .catch(function(){
+          // 服务端整个挂了（断网/后端重启）→ 本地模型顶上
+          if(useLocal){ askLocal(text).catch(function(){ return askCloud(text,role); }).then(function(r){ done(r); }).catch(fallback); }
+          else { askCloud(text,role).then(function(r){ done(r); }).catch(fallback); }
+        });
+    }
+    runTaskFetch();
+    mirror(text);
+  }
+  window.__englishMode = false;
+  window.toggleEnglishMode = function() {
+    window.__englishMode = !window.__englishMode;
+    if (window.__englishMode) {
+      sys('✨ 已开启「🗣️ 英语对练」口语模式！可以直接打英文，或者点 🎤/📞 语音和我说英文，我会帮你纠正语法错误、推荐地道表达并练习口语～\n\nEnglish practice mode is active. Let\'s practice speaking English together! Type or click call to start.');
+      document.getElementById('txt').placeholder = 'Practice speaking English here...';
+    } else {
+      sys('✨ 已退出英语对练，切回工作助手模式。');
+      document.getElementById('txt').placeholder = '说点什么，或让我帮你干活…';
+    }
+  };
+
+  document.getElementById('send').onclick=function(){send();};
+  txt.addEventListener('keydown',function(e){ if(e.key==='Enter') send(); });
+  var PET_FUN_LINES = [
+    '呀！被你发现了～ ✨',
+    '别捏我的胖脸啦，会红的 😳',
+    '摸摸头，今天工作也元气满满哦！',
+    '要投喂我一个文件吗？可以直接拖到我身上 📎',
+    '给老板倒杯热茶 ☕ 歇歇眼，动一动吧～',
+    '守望中，安心去忙，出错了有我提醒你 👀',
+    '今天也陪在你身边 🎐',
+    '你刚才点击的那个地方，我都替你看好啦，嘿嘿～',
+    '偷偷告诉你，多和我聊天可以提升我们的小亲密度哦 🐾'
+  ];
+  var lastFunAt = 0;
+  hero.addEventListener('click',function(){
+    // 刚拖动过就不算点击（否则拖完松手会把聊天窗弹出来）
+    if (window.__sallyDragMoved && Date.now() - window.__sallyDragMoved < 400) return;
+    // 主人不在时，把点击当"访客想进我家"处理，不展开聊天
+    if (PET && window.__absentNow && window.__absentNow()) {
+      if (window.petSay) window.petSay('🚪 ' + window.__absentLine(), 5000);
+      window.playCuteSound('soft');
+      return;
+    }
+    if (PET && document.body.classList.contains('collapsed')) {
+      var now = Date.now();
+      if (now - lastFunAt < 300) {
+        // 双击：展开
+        toggleCollapse();
+        window.playCuteSound('bleep');
+        setTimeout(function () {
+          try { if (!document.body.classList.contains('collapsed') && activeNotices().length) leaveCard(); } catch (e) {}
+        }, 420);
+        return;
+      }
+      lastFunAt = now;
+      var anims = ['pet', 'hop', 'love', 'tilt', 'pop'];
+      var chosen = anims[Math.floor(Math.random() * anims.length)];
+      try {
+        var sallyStage = document.getElementById('sallyStage') || document.querySelector('.sp-char');
+        if (sallyStage) {
+          sallyStage.classList.remove(chosen); void sallyStage.offsetWidth; sallyStage.classList.add(chosen);
+          setTimeout(function() { sallyStage.classList.remove(chosen); }, 900);
+        }
+      } catch(e){}
+      for (var i = 0; i < 2; i++) heart(i * 120);
+      window.playCuteSound();
+      var line = PET_FUN_LINES[Math.floor(Math.random() * PET_FUN_LINES.length)];
+      if (window.petSay) window.petSay(line, 4500);
+      return;
+    }
+    if (!PET) {
+      txt.focus();
+    } else {
+      toggleCollapse();
+    }
+  });
+
+  // ---- 快捷问题 ----
+  ['🗣️ 英语对练','怎么联系 sally 本人？','怎么开香港公司账户？','电汇 T/T 多久到账？','✨ 我有个新需求'].forEach(function(q){
+    var b=document.createElement('div'); b.className='chip'; b.textContent=q;
+    b.onclick=function(){
+      if (q === '🗣️ 英语对练') {
+        window.toggleEnglishMode();
+        return;
+      }
+      if(q.indexOf('新需求')>=0){ txt.placeholder='请描述你的新需求（谁用/解决什么/期望效果）…'; txt.focus(); } else send(q);
+    };
+    document.getElementById('chips').appendChild(b);
+  });
+
+  // ---- 状态 ----
+  window.__sallyPing = function(){
+    return fetch(API + '/health?t=' + Date.now()).then(function(r){return r.json();}).then(function(j){
+      var d=document.getElementById('dot'); if(d) d.classList.add('on');
+      var ready = j && j.llm_ready;
+      document.getElementById('st').textContent = ready ? ('已连接 · 大模型链 '+(j.chain||[]).length+' 条 · 教材 '+(j.tools&&j.tools.learn||0)+' 段') : ('已连接 · 知识库模式 '+(j&&j.kb||0)+' 条');
+      return j;
+    }).catch(function(){ document.getElementById('st').textContent='后端未连接（可切本地模型）'; });
+  };
+  // 刷新：重连后端 + 重读最新配置（角色表 / 店铺台账 / 请假数据都是热加载，刷新即生效）
+  window.__sallyRefresh = function(){
+    var b = document.getElementById('refreshBtn');
+    if (b && b.disabled) return;
+    if (b) { b.classList.add('spin'); b.disabled = true; }
+    var t0 = Date.now();
+    var fin = function(ok){
+      var wait = Math.max(0, 550 - (Date.now() - t0));
+      setTimeout(function(){
+        if (b) { b.classList.remove('spin'); b.disabled = false; }
+        if (!ok) { var s = document.getElementById('st'); if (s) s.textContent = '后端未连接（可切本地模型）'; }
+        try { if (window.toast) toast(ok ? '已刷新 · 配置已重新读取' : '刷新失败：后端没响应'); } catch(e) {}
+      }, wait);
+    };
+    Promise.resolve(window.__sallyPing && window.__sallyPing()).then(function(j){ fin(!!j); }).catch(function(){ fin(false); });
+  };
+  window.__sallyPing();
+
+  // 角色（换装）
+  fetch(API+'/roles').then(function(r){return r.json();}).then(function(j){ if(j&&j.roles&&j.roles.length){ ROLES=j.roles; renderRoles(); API_OK=true; } setDiag(); }).catch(function(){ setDiag(); });
+  pingApi(); setDiag(); setTimeout(setDiag, 1500); setTimeout(setDiag, 4000);
+
+  // 恢复已有会话
+  fetch(INBOX+'/mine',{credentials:'same-origin'}).then(function(r){return r.json();}).then(function(j){
+    var ts=(j&&j.threads)||[];
+    for(var i=0;i<ts.length;i++){ if(ts[i].category==='sally精灵'&&ts[i].status==='open'){ threadId=ts[i].id; lastSeen=(ts[i].last_message&&ts[i].last_message.id)||0; startPoll(); break; } }
+  }).catch(function(){});
+
+  paintMode(); greet();
+})();
+</script>
+<script>
+/* 侧栏开关的兜底层（独立 script，放最后）：前面任何一段脚本报错都不连累它。
+   - ✕：内联 onclick + 这里的事件委托，双保险；捕获阶段截住，避免和初始化里的 toggle 互相打架
+   - Esc 也能关
+   - 全程以 class "open" 为唯一状态源，不写 inline transform（写了就会盖住类规则，下次打不开） */
+(function(){
+  function sideEl(){ return document.getElementById('side'); }
+
+  function setOpen(open){
+    var s = sideEl(); if(!s) return;
+    try{
+      s.style.transition = '';
+      s.style.transform = '';            // 清掉历史兜底留下的 inline，否则类切换会被覆盖
+      s.classList.toggle('open', !!open);
+    }catch(e){}
+    // 兜底：窗口被遮挡/后台时 CSS 过渡可能卡住 → 260ms 后位置仍不对就直接写死最终位置
+    setTimeout(function(){
+      try{
+        var tr = getComputedStyle(s).transform, x = 0;
+        if(tr && tr !== 'none'){
+          x = parseFloat(tr.replace(/^matrix\(|\)$/g, '').split(',')[4]) || 0;
+        }
+        var want = open ? 0 : -(s.offsetWidth || 218);
+        if(Math.abs(x - want) > 2){
+          s.style.transition = 'none';
+          s.style.transform = open ? 'translateX(0)' : 'translateX(-100%)';
+        }
+      }catch(e){}
+    }, 260);
+  }
+
+  window.__sallyCloseSide = function(){ setOpen(false); };
+  window.__sallyToggleSide = function(){ var s = sideEl(); setOpen(!(s && s.classList.contains('open'))); };
+
+  function isX(t){ return !!(t && (t.id === 'sideX' || (t.closest && t.closest('#sideX')))); }
+
+  // 捕获阶段就截住：初始化里还挂着 sx.onclick = toggleSide，不拦会被它再 toggle 回来
+  document.addEventListener('pointerdown', function(e){
+    if(isX(e.target)){ try{ e.preventDefault(); e.stopPropagation(); }catch(x){} setOpen(false); }
+  }, true);
+  document.addEventListener('click', function(e){
+    if(isX(e.target)){ try{ e.preventDefault(); e.stopPropagation(); }catch(x){} setOpen(false); }
+  }, true);
+
+  document.addEventListener('keydown', function(e){
+    if(e && (e.key === 'Escape' || e.keyCode === 27)){
+      var s = sideEl();
+      if(s && s.classList.contains('open')) setOpen(false);
+    }
+  });
+})();</script>
+</body>
+</html>

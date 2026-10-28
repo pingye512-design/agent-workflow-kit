@@ -1,0 +1,9 @@
+.head { margin-bottom:26rpx; }
+.add { width:180rpx; margin:0; }
+.form .input { margin-bottom:16rpx; }
+.empty { text-align:center; padding:90rpx 20rpx; }
+.plane { font-size:72rpx; margin-bottom:18rpx; }
+.countdown { color:#315efb; font-size:34rpx; font-weight:700; }
+.trip-title { font-size:34rpx; font-weight:700; margin:12rpx 0; }
+.next { margin-top:22rpx; padding-top:20rpx; border-top:2rpx solid #edf0f5; }
+.notice { color:#778197; font-size:23rpx; line-height:1.6; }

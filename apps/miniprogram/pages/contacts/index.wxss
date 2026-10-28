@@ -1,0 +1,5 @@
+.search { margin:22rpx 0; }
+.processes { white-space:nowrap; margin-bottom:8rpx; }
+.process { display:inline-block; width:340rpx; margin-right:16rpx; white-space:normal; vertical-align:top; }
+.process-name,.dept-name { font-weight:700; font-size:32rpx; margin-bottom:14rpx; }
+.person { padding:18rpx 0; border-top:2rpx solid #edf0f5; }

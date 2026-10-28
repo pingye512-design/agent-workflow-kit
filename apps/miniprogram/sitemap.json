@@ -1,0 +1,1 @@
+{ "desc": "小仁移动端", "rules": [{ "action": "allow", "page": "*" }] }

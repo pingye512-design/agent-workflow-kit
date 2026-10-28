@@ -1,0 +1,10 @@
+<view class="page">
+  <view class="card profile"><view class="avatar">仁</view><view><view class="title">小仁</view><view class="muted">RB 智能助理</view></view></view>
+  <view class="card">
+    <view class="item row between"><text>账号绑定</text><text class="warn">待接企业 AppID</text></view>
+    <view class="item row between"><text>服务地址</text><text class="ok">{{service}}</text></view>
+    <view class="item row between"><text>版本</text><text class="muted">{{build}}</text></view>
+  </view>
+  <view class="card boundary"><view class="section">能力边界</view><view>• 实时火车查询由现有随行服务提供</view><view>• 不代订、不代付，不编票价与余票</view><view>• 公司流程未收录时只告诉你找谁</view></view>
+  <button class="outline" bindtap="clearTrips">清空本机离线行程</button>
+</view>

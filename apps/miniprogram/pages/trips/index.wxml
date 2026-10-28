@@ -1,0 +1,18 @@
+<view class="page">
+  <view class="row between head"><view><view class="title">下一段行程</view><view class="muted">本机保存，断网也能看</view></view><button class="primary add" bindtap="toggleForm">＋ 添加</button></view>
+  <view wx:if="{{showForm}}" class="card form">
+    <input class="input" data-key="title" value="{{title}}" bindinput="field" placeholder="行程名称，例如：上海客户拜访" />
+    <input class="input" data-key="destination" value="{{destination}}" bindinput="field" placeholder="目的地" />
+    <input class="input" data-key="departureAt" value="{{departureAt}}" bindinput="field" placeholder="出发时间：2026-10-29 10:30" />
+    <input class="input" data-key="nextAction" value="{{nextAction}}" bindinput="field" placeholder="下一步：值机 / 上车 / 联系接机" />
+    <button class="primary" bindtap="save">保存到离线行程</button>
+  </view>
+  <view wx:if="{{!trips.length}}" class="card empty"><view class="plane">✈️</view><view>还没有行程</view><view class="muted">添加后，首页 3 秒内就能看到下一段。</view></view>
+  <view wx:for="{{trips}}" wx:key="id" class="card trip">
+    <view class="countdown">还有 {{item.countdown}}</view>
+    <view class="trip-title">{{item.title}}</view>
+    <view class="muted">{{item.departureAt}} · {{item.destination}}</view>
+    <view wx:if="{{item.nextAction}}" class="next">下一步：{{item.nextAction}}</view>
+  </view>
+  <view class="notice">不代订、不代付；票价、余票、航班号和车次时刻以官方渠道实时页面为准。</view>
+</view>

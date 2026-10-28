@@ -1,0 +1,9 @@
+html{height:100%;height:100dvh}
+body:not(.pet){min-height:0;height:100%;height:100dvh;padding-top:env(safe-area-inset-top)}
+body:not(.pet) footer{padding-bottom:max(10px,env(safe-area-inset-bottom))}
+#rbInstall{white-space:nowrap;min-height:36px}
+#rbInstallHelp{position:fixed;z-index:100000;top:50%;left:50%;transform:translate(-50%,-50%);width:min(440px,calc(100vw - 32px));box-sizing:border-box;padding:26px;background:#fff;color:#243b53;border:1px solid #d8e3ed;border-radius:16px;box-shadow:0 20px 80px #0006;font:14px/1.8 system-ui}
+#rbInstallHelp h2{font-size:20px;margin:0 0 14px}#rbInstallHelp button{min-height:44px;width:100%;border:0;border-radius:8px;color:white;background:#1a496a;font:inherit}
+@media(pointer:coarse){body:not(.pet) button,body:not(.pet) .sd-i{min-height:44px}body:not(.pet) input,body:not(.pet) textarea{font-size:16px}}
+@media(min-width:700px) and (max-width:1200px){body:not(.pet) aside{width:260px;flex-basis:260px}body:not(.pet) #msgs{padding:20px}body:not(.pet) main{min-height:0}}
+@media(max-width:699px){body:not(.pet) header{flex-wrap:wrap;padding:10px 12px}body:not(.pet) header h1{font-size:15px}#rbInstall{font-size:12px}body:not(.pet) aside{max-width:100%}}

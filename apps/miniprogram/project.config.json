@@ -1,0 +1,15 @@
+{
+  "description": "小仁移动端（向导 / 随行）",
+  "packOptions": { "ignore": [] },
+  "setting": {
+    "urlCheck": true,
+    "es6": true,
+    "enhance": true,
+    "postcss": true,
+    "minified": true
+  },
+  "compileType": "miniprogram",
+  "appid": "touristappid",
+  "projectname": "xiaoren-mobile",
+  "miniprogramRoot": "./"
+}

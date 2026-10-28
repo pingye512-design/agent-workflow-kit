@@ -1,0 +1,21 @@
+<view class="page">
+  <view class="hero card">
+    <view class="eyebrow">RB 智能助理</view>
+    <view class="title">{{roleName}}</view>
+    <view class="muted">真实数据优先；没收录的流程和实时票价不猜。</view>
+  </view>
+  <view class="roles">
+    <button class="chip {{role==='guide'?'active':''}}" data-role="guide" bindtap="switchRole">🧭 向导</button>
+    <button class="chip {{role==='travel'?'active':''}}" data-role="travel" bindtap="switchRole">✈️ 随行</button>
+  </view>
+  <scroll-view class="chat card" scroll-y>
+    <view wx:for="{{messages}}" wx:key="index" class="bubble {{item.from}}">{{item.text}}</view>
+  </scroll-view>
+  <scroll-view class="quick" scroll-x>
+    <button wx:for="{{quick}}" wx:key="*this" class="quick-item" data-text="{{item}}" bindtap="useQuick">{{item}}</button>
+  </scroll-view>
+  <view class="composer row">
+    <input class="input flex" value="{{input}}" bindinput="onInput" confirm-type="send" bindconfirm="send" placeholder="问流程、找人，或贴出行需求" />
+    <button class="primary send" loading="{{sending}}" bindtap="send">发送</button>
+  </view>
+</view>

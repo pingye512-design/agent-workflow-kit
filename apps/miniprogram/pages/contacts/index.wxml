@@ -1,0 +1,15 @@
+<view class="page">
+  <view class="title">找人办事</view>
+  <input class="input search" value="{{keyword}}" bindinput="search" placeholder="搜姓名、部门或岗位" />
+  <scroll-view class="processes" scroll-x>
+    <view wx:for="{{processes}}" wx:key="label" class="process card">
+      <view class="process-name">{{item.label}}</view><view>{{item.owner}}</view><view class="muted">{{item.status}}</view>
+    </view>
+  </scroll-view>
+  <view wx:for="{{departments}}" wx:key="name" class="card dept">
+    <view class="dept-name">{{item.name}}</view>
+    <view wx:for="{{item.people}}" wx:key="name" wx:for-item="person" class="person row between">
+      <view>{{person.name}}</view><view class="muted">{{person.role}}</view>
+    </view>
+  </view>
+</view>

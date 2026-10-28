@@ -1,0 +1,13 @@
+.hero { background: linear-gradient(135deg,#10204a,#315efb); color:#fff; }
+.eyebrow { opacity:.75; font-size:22rpx; letter-spacing:4rpx; margin-bottom:10rpx; }
+.hero .muted { color:#dbe5ff; margin-top:10rpx; }
+.roles,.quick { white-space:nowrap; margin-bottom:20rpx; }
+.chip,.quick-item { display:inline-flex; width:auto; margin:0 14rpx 0 0; font-size:26rpx; background:#fff; border-radius:999rpx; }
+.chip.active { background:#315efb; color:#fff; }
+.chat { height:620rpx; box-sizing:border-box; }
+.bubble { max-width:82%; padding:18rpx 22rpx; margin-bottom:18rpx; border-radius:18rpx; line-height:1.6; white-space:pre-wrap; }
+.bubble.assistant { background:#eef3ff; }
+.bubble.user { background:#315efb; color:#fff; margin-left:auto; }
+.composer { gap:14rpx; }
+.flex { flex:1; }
+.send { width:150rpx; margin:0; }
